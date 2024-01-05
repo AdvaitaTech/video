@@ -1,19 +1,8 @@
 import { CanvasPosition } from "modules/core/foundation";
-import { copyJSON } from "modules/core/function-utils";
 import { MergeboxNode, Node, NodeType, TextboxNode } from "./ProjectTypes";
-import { generateId } from "modules/core/project-utils";
 import { Doc, Map } from "yjs";
-import { WebsocketProvider } from "@y-rb/actioncable";
-import { createConsumer } from "@rails/actioncable";
 
 const doc = new Doc();
-const consumer = createConsumer("ws://localhost:4000/cable");
-
-//@ts-ignore
-const provider = new WebsocketProvider(doc, consumer, "SyncChannel", {
-  id: "1",
-});
-
 export interface ProjectRoot {
   textboxes: {
     [id: string]: TextboxNode;
@@ -22,28 +11,6 @@ export interface ProjectRoot {
     [id: string]: MergeboxNode;
   };
 }
-
-const getEmptyProjectRoot = () => {
-  return {
-    textboxes: {},
-    mergeboxes: {},
-    imageboxes: {},
-    texts: {},
-    images: {},
-    videos: {},
-  };
-};
-
-// const doc = new Doc();
-// const provider = new WebsocketProvider(
-//   "ws://localhost:1234",
-//   "advaita-boards",
-//   // "wss://s8900.blr1.piesocket.com/v3/1?api_key=TLi7SBirMhpM6hE8BGFobgTwVxrONF8DVVXhYuEq&notify_self=1",
-//   // "advaita-boards",
-//   // "wss://ws-ap2.pusher.com:443/app/b6229e41fcc751d61ba8",
-//   // "boards",
-//   doc
-// );
 
 export class ProjectRegistry {
   private id: string | null = null;
@@ -84,6 +51,7 @@ export class ProjectRegistry {
   private touch(id: string) {
     const node = this.getNode(id);
     const tNow = performance.now();
+    if (!node) return;
     node.cacheKey = `${tNow}-${node.id}`;
     if (node.parent) {
       this.touch(node.parent);
@@ -152,12 +120,12 @@ export class ProjectRegistry {
   public ___fetchRoot(): ProjectRoot {
     return ["textboxes", "mergeboxes"].reduce(
       (result, field) => {
-        this.root.get(field)?.forEach((value) => {
+        this.root.get(field)?.forEach((value: Node) => {
           result[field][value.id] = value;
         });
         return result;
       },
-      { textboxes: {}, mergeboxes: {} }
+      { textboxes: {}, mergeboxes: {} } as any
     );
   }
 

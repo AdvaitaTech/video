@@ -1,4 +1,3 @@
-import CanvasStore from "modules/state/canvas/CanvasStore";
 import { PropsWithChildren } from "react";
 import { inBounds } from "./math-utils";
 

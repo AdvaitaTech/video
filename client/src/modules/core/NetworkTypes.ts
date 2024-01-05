@@ -12,23 +12,3 @@ export type User = {
   email: string;
   avatar: string;
 };
-
-export type Document = {
-  uuid: string;
-  title: string;
-  body: string;
-};
-
-export type Comment = {
-  uuid: string;
-  body: string;
-};
-
-export type DocumentWithComments = {
-  comments: Comment[];
-} & Document;
-
-export type PRQuery = {
-  document: Document;
-  children: DocumentWithComments[];
-};

@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { inBounds } from "./math-utils";
 
 describe("Math Utils", () => {
