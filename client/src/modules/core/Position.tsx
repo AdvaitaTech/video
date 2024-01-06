@@ -9,8 +9,8 @@ export interface CanvasPosition {
 }
 
 export interface ScreenPosition {
-  x: number;
-  y: number;
+  left: number;
+  top: number;
   width: number;
   height: number;
 }
@@ -31,8 +31,8 @@ export const Position = ({
     inBounds(
       { left, top, height, width },
       {
-        left: screen.x,
-        top: screen.y,
+        left: screen.left,
+        top: screen.top,
         width: screen.width,
         height: screen.height,
       }
@@ -42,8 +42,8 @@ export const Position = ({
       <div
         className="absolute inline-block z-10 bg-white"
         style={{
-          left: `${left - screen.x}px`,
-          top: `${top - screen.y}px`,
+          left: `${left - screen.left}px`,
+          top: `${top - screen.top}px`,
           width: `${width}px`,
           height: `${height}px`,
         }}

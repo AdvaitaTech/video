@@ -90,12 +90,6 @@ export default class CanvasStore {
     return cameraToScreenCoordinates(x, y, z, angle, aspect);
   }
 
-  // TODO:- Temporary function until screen returns CanvasPosition
-  public static get screenPosition() {
-    const screen = this.screen;
-    return { ...screen, left: screen.x, top: screen.y };
-  }
-
   public static get camera() {
     return this.data.camera;
   }
@@ -197,7 +191,7 @@ export default class CanvasStore {
   // pointer position from top left of the screen
   public static movePointer(deltaX: number, deltaY: number) {
     const scale = this.scale;
-    const { x: left, y: top } = this.screen;
+    const { left, top } = this.screen;
     this.data.pointer.x = left + deltaX / scale.x;
     this.data.pointer.y = top + deltaY / scale.y;
   }
