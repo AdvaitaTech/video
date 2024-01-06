@@ -4,7 +4,7 @@ import {
   convertScreenPositionToCamera,
   scaleWithAnchorPoint,
 } from "../../core/camera-utils";
-import { CAMERA_ANGLE, RECT_H, RECT_W } from "../../core/constants";
+import { CAMERA_ANGLE, RECT_H, RECT_W } from "modules/core/constants";
 import { radians } from "../../core/math-utils";
 import AppStore from "../AppStore";
 
@@ -47,81 +47,60 @@ const getInitialCanvasState = (): CanvasState => {
   };
 };
 
-let canvasData = getInitialCanvasState();
-
 export default class CanvasStore {
-  private static get data() {
-    if (!canvasData)
-      canvasData = {
-        shouldRender: true,
-        pixelRatio: window.devicePixelRatio || 1,
-        container: {
-          width: 0,
-          height: 0,
-        },
-        pointer: {
-          x: 0,
-          y: 0,
-        },
-        camera: {
-          x: 0,
-          y: 0,
-          z: 0,
-        },
-      };
-    return canvasData;
-  }
-
-  static initialize(width: number, height: number) {
+  data: CanvasState = getInitialCanvasState();
+  initialize(width: number, height: number) {
     const containerWidth = width;
     const containerHeight = height;
-    canvasData = getInitialCanvasState();
-    canvasData.pixelRatio = window.devicePixelRatio || 1;
-    canvasData.container.width = containerWidth;
-    canvasData.container.height = containerHeight;
-    canvasData.camera.x = 1.5 * RECT_W;
-    canvasData.camera.y = 1.5 * RECT_H;
-    canvasData.camera.z = containerWidth / (2 * Math.tan(CAMERA_ANGLE));
+    this.data = {
+      ...getInitialCanvasState(),
+      pixelRatio: window.devicePixelRatio || 1,
+      container: {
+        width: containerWidth,
+        height: containerHeight,
+      },
+      camera: {
+        x: 1.5 * RECT_W,
+        y: 1.5 * RECT_H,
+        z: containerWidth / (2 * Math.tan(CAMERA_ANGLE)),
+      },
+    };
   }
-  public static get screen() {
+  public get screen() {
     const { x, y, z } = this.camera;
     const aspect = this.aspect;
     const angle = CAMERA_ANGLE;
     return cameraToScreenCoordinates(x, y, z, angle, aspect);
   }
 
-  public static get camera() {
+  public get camera() {
     return this.data.camera;
   }
-  public static get scale() {
-    const { width: w, height: h } = CanvasStore.screen;
-    const { width: cw, height: ch } = CanvasStore.container;
+  public get scale() {
+    const { width: w, height: h } = this.screen;
+    const { width: cw, height: ch } = this.container;
     return { x: cw / w, y: ch / h };
   }
-  public static get shouldRender() {
-    return canvasData.shouldRender;
+  public get shouldRender() {
+    return this.data.shouldRender;
   }
-  public static set shouldRender(value: boolean) {
-    canvasData.shouldRender = value;
-  }
-
-  public static get container() {
-    return canvasData.container;
+  public set shouldRender(value: boolean) {
+    this.data.shouldRender = value;
   }
 
-  public static get pointer() {
-    return canvasData.pointer;
+  public get container() {
+    return this.data.container;
   }
 
-  private static get aspect() {
-    return canvasData.container.width / canvasData.container.height;
+  public get pointer() {
+    return this.data.pointer;
   }
 
-  private static isCameraInBounds(
-    cameraX: number,
-    cameraY: number,
-    cameraZ: number
-  ) {
+  private get aspect() {
+    return this.data.container.width / this.data.container.height;
+  }
+
+  private isCameraInBounds(cameraX: number, cameraY: number, cameraZ: number) {
     return true;
     // const angle = radians(30);
     // const { x, y, width, height } = cameraToScreenCoordinates(
@@ -136,7 +115,7 @@ export default class CanvasStore {
     // return isXInBounds && isYInBounds;
   }
 
-  public static moveCamera(mx: number, my: number) {
+  public moveCamera(mx: number, my: number) {
     const scrollFactor = 1.5;
     const deltaX = mx * scrollFactor,
       deltaY = my * scrollFactor;
@@ -150,7 +129,7 @@ export default class CanvasStore {
     }
   }
 
-  public static zoomCamera(deltaX: number, deltaY: number) {
+  public zoomCamera(deltaX: number, deltaY: number) {
     // Normal zoom is quite slow, we want to scale the amount quite a bit
     const zoomScaleFactor = 10;
     const deltaAmount = zoomScaleFactor * Math.max(deltaY);
@@ -189,14 +168,14 @@ export default class CanvasStore {
   }
 
   // pointer position from top left of the screen
-  public static movePointer(deltaX: number, deltaY: number) {
+  public movePointer(deltaX: number, deltaY: number) {
     const scale = this.scale;
     const { left, top } = this.screen;
     this.data.pointer.x = left + deltaX / scale.x;
     this.data.pointer.y = top + deltaY / scale.y;
   }
 
-  public static centerNodeOnScreen(id: string) {
+  public centerNodeOnScreen(id: string) {
     const node = AppStore.project.getNode(id);
     if (!node) return;
     const { width, height } = this.screen;
@@ -213,10 +192,7 @@ export default class CanvasStore {
     );
   }
 
-  public static centerMultipleNodesOnScreen(
-    ids: string[],
-    padding: number = 50
-  ) {
+  public centerMultipleNodesOnScreen(ids: string[], padding: number = 50) {
     const boundingBox = ids.reduce<{
       left: number;
       top: number;

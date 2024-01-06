@@ -3,8 +3,10 @@ import ProjectStore from "./project/ProjectStore";
 
 export default class AppStore {
   private static _project: ProjectStore | null = null;
+  private static _canvas: CanvasStore | null = null;
   static get canvas() {
-    return CanvasStore;
+    if (!this._canvas) this._canvas = new CanvasStore();
+    return this._canvas;
   }
 
   static get project() {

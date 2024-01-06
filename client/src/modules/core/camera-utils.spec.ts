@@ -4,7 +4,7 @@ import {
   convertScreenPositionToCamera,
   scaleWithAnchorPoint,
 } from "./camera-utils";
-import { CAMERA_ANGLE } from "./constants";
+import { CAMERA_ANGLE } from "modules/core/constants";
 
 describe("camera-utils", (test) => {
   test("camera and screen should be interoperable", () => {
