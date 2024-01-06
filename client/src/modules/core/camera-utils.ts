@@ -1,4 +1,4 @@
-import { CanvasPosition } from "./foundation";
+import { CanvasPosition } from "./Position";
 
 export const cameraToScreenCoordinates = (
   x: number,
@@ -6,12 +6,12 @@ export const cameraToScreenCoordinates = (
   z: number,
   cameraAngle: number,
   screenAspect: number
-) => {
+): CanvasPosition => {
   const width = 2 * z * Math.tan(cameraAngle);
   const height = width / screenAspect;
   const screenX = x - width / 2;
   const screenY = y - height / 2;
-  return { x: screenX, y: screenY, width, height };
+  return { left: screenX, top: screenY, width, height };
 };
 
 // After changing scale, we return an x y position so that the relative position from top left remains constant

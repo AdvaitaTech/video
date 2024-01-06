@@ -1,4 +1,4 @@
-import { CanvasPosition } from "modules/core/foundation";
+import { CanvasPosition } from "modules/core/Position";
 import {
   cameraToScreenCoordinates,
   convertScreenPositionToCamera,

@@ -1,4 +1,4 @@
-import { CanvasPosition } from "modules/core/foundation";
+import { CanvasPosition } from "modules/core/Position";
 import { MergeboxNode, Node, NodeType, TextboxNode } from "./ProjectTypes";
 import { Doc, Map } from "yjs";
 
