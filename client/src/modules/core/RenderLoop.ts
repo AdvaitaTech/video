@@ -1,4 +1,4 @@
-import CanvasStore from "modules/state/canvas/CanvasStore";
+import AppStore from "modules/state/AppStore";
 import { useEffect, useRef, useState } from "react";
 
 class RenderLoop {
@@ -45,15 +45,15 @@ export const useRenderLoop = (fps: number = 15) => {
   const [frame, setFrame] = useState("0");
   const loop = useRef<RenderLoop>(
     getRenderLoop(fps, () => {
-      if (CanvasStore.shouldRender) {
+      if (AppStore.canvas.shouldRender) {
         setFrame(`${performance.now()}`);
-        CanvasStore.shouldRender = false;
+        AppStore.canvas.shouldRender = false;
       }
     })
   );
 
   useEffect(() => {
-    CanvasStore.shouldRender = true;
+    AppStore.canvas.shouldRender = true;
     loop.current.start();
 
     return () => loop.current.stop();
