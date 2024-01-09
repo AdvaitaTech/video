@@ -1,15 +1,16 @@
 import useRenderLoop from "modules/core/RenderLoop";
 import AppStore from "modules/state/AppStore";
 import useSize from "@react-hook/size";
-import { getUiState } from "modules/state/ui/UiStore";
 import { memo, useEffect, useRef } from "react";
 import ProjectNode from "./nodes/ProjectNode";
+import { generateId } from "modules/core/project-utils";
+import { createVideoEditorNodeFromVideoClip } from "./utils/VideoEditorUtils";
 
 const InfiniteCanvas = ({ frame }: { frame: string }) => {
   const scale = AppStore.canvas.scale;
   const screen = AppStore.canvas.screen;
   const nodes = AppStore.project.rootNodes;
-  const { selectedNode: selected } = getUiState();
+  // const { selectedNode: selected } = getUiState();
   const container = AppStore.canvas.container;
   const { x, y } = AppStore.canvas.pointer;
 
@@ -27,7 +28,7 @@ const InfiniteCanvas = ({ frame }: { frame: string }) => {
           key={index}
           node={node}
           cacheKey={node.cacheKey}
-          selected={node.id === selected}
+          selected={false}
         ></ProjectNode>
       ))}
       {/* }<PreviewNode frame={frame} pointerX={x} pointerY={y} /> {*/}
@@ -41,6 +42,16 @@ export const CanvasRoot = () => {
   useEffect(() => {
     if (width === 0 || height === 0) return;
     AppStore.canvas.initialize(width, height);
+    let node = createVideoEditorNodeFromVideoClip(
+      generateId(),
+      { top: 1400, left: 1400, width: 500, height: 500 },
+      { url: "" }
+    );
+    AppStore.project.addTextbox(generateId(), {
+      position: { top: 1200, left: 1200, width: 200, height: 100 },
+      text: "Hello World",
+    });
+    AppStore.project.addVideoEditor(generateId(), node);
   }, [width, height]);
   const frame = useRenderLoop();
 

@@ -25,27 +25,10 @@ export default class ProjectStore {
     AppStore.canvas.shouldRender = true;
   }
 
-  public addVideoEditor(
-    id: string,
-    {
-      parent,
-      child,
-      position,
-    }: {
-      parent: string;
-      child: string;
-      position: CanvasPosition;
-    }
-  ) {
+  public addVideoEditor(id: string, node: VideoEditorNode) {
     this.registry.addNode({
       id,
-      position,
-      type: "video-editor",
-      children: [],
-      cacheKey: "",
-      author: this.author?.uuid || "",
-      child,
-      parent,
+      ...node,
     });
     AppStore.canvas.shouldRender = true;
   }
@@ -138,6 +121,6 @@ export default class ProjectStore {
   public get rootNodes(): RootNode[] {
     return ([] as RootNode[])
       .concat(this.registry.allTextboxes)
-      .concat(this.registry.allMergeboxes);
+      .concat(this.registry.allVideoEditors);
   }
 }

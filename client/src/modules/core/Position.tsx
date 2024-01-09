@@ -40,7 +40,7 @@ export const Position = ({
   ) {
     return (
       <div
-        className="absolute inline-block z-10 bg-white"
+        className="absolute inline-block z-10"
         style={{
           left: `${left - screen.left}px`,
           top: `${top - screen.top}px`,

@@ -19,10 +19,14 @@ export class ProjectRegistry {
   private _origin: ProjectRoot | null = null;
 
   private get textboxes() {
+    let textboxes = this.root.get("textboxes");
+    if (!textboxes) this.root.set("textboxes", new Map<TextboxNode>());
     return this.root.get("textboxes") as Map<TextboxNode>;
   }
 
   private get videoEditors() {
+    let videoEditors = this.root.get("vEditors");
+    if (!videoEditors) this.root.set("vEditors", new Map<VideoEditorNode>());
     return this.root.get("vEditors") as Map<VideoEditorNode>;
   }
 
