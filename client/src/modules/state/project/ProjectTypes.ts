@@ -1,7 +1,7 @@
 import { CanvasPosition } from "modules/core/Position";
 import { FocusEvent, KeyboardEvent, MouseEvent } from "react";
 
-export type NodeType = "textbox" | "mergebox";
+export type NodeType = "textbox" | "video-editor";
 
 export interface GenericNode {
   type: NodeType;
@@ -43,13 +43,43 @@ export interface Comment {
   comments?: Comment[];
 }
 
-export interface MergeboxNode extends GenericNode {
-  type: "mergebox";
-  child: string;
-  parent: string;
-  diff: string;
+export interface GenericTrack {
+  title?: string;
+  id: string;
+  cacheKey: string;
+  parent?: string;
+  index: number;
+  tracks?: [];
+}
+
+export interface VideoTrack extends GenericTrack {
+  type: "video" | "image";
+  id: string;
+  cacheKey: string;
+  clips: VideoClip[];
+}
+
+export interface GenericClip {
+  start: number;
+  end: number;
+  hidden?: boolean;
+  locked?: boolean;
+  parent?: string;
+  id: string;
+  cacheKey: string;
+}
+
+export interface VideoClip extends GenericClip {
+  type: "video-clip";
+  url: string;
+  clipStart: number;
+  clipEnd: number;
+}
+
+export interface VideoEditorNode extends GenericNode {
+  type: "video-editor";
   position: CanvasPosition;
-  comments: Comment[];
+  tracks: GenericTrack[];
 }
 
 export interface PreviewNode {
@@ -57,7 +87,7 @@ export interface PreviewNode {
   id: string;
 }
 
-export type RootNode = TextboxNode | MergeboxNode;
+export type RootNode = TextboxNode | VideoEditorNode;
 export type Node = RootNode;
 
 export type AllEventTypes =

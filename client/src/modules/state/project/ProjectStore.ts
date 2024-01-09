@@ -25,33 +25,24 @@ export default class ProjectStore {
     AppStore.canvas.shouldRender = true;
   }
 
-  public addMergeBox(
+  public addVideoEditor(
     id: string,
     {
       parent,
       child,
       position,
-      comments,
-      diff,
-      connections,
     }: {
       parent: string;
       child: string;
       position: CanvasPosition;
-      comments: Comment[];
-      connections: { id: string }[];
-      diff: string;
     }
   ) {
     this.registry.addNode({
       id,
       position,
-      type: "mergebox",
+      type: "video-editor",
       children: [],
-      comments: comments || [],
       cacheKey: "",
-      diff,
-      connections,
       author: this.author?.uuid || "",
       child,
       parent,

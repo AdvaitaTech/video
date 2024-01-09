@@ -1,5 +1,5 @@
 import { CanvasPosition } from "modules/core/Position";
-import { MergeboxNode, Node, NodeType, TextboxNode } from "./ProjectTypes";
+import { Node, NodeType, TextboxNode, VideoEditorNode } from "./ProjectTypes";
 import { Doc, Map } from "yjs";
 
 const doc = new Doc();
@@ -7,14 +7,14 @@ export interface ProjectRoot {
   textboxes: {
     [id: string]: TextboxNode;
   };
-  mergeboxes: {
-    [id: string]: MergeboxNode;
+  vEditors: {
+    [id: string]: VideoEditorNode;
   };
 }
 
 export class ProjectRegistry {
   private id: string | null = null;
-  private _shadowRoot: Map<Map<TextboxNode> | Map<MergeboxNode>> =
+  private _shadowRoot: Map<Map<TextboxNode> | Map<VideoEditorNode>> =
     doc.getMap("testing");
   private _origin: ProjectRoot | null = null;
 
@@ -22,13 +22,13 @@ export class ProjectRegistry {
     return this.root.get("textboxes") as Map<TextboxNode>;
   }
 
-  private get mergeboxes() {
-    return this.root.get("mergeboxes") as Map<MergeboxNode>;
+  private get videoEditors() {
+    return this.root.get("vEditors") as Map<VideoEditorNode>;
   }
 
   public addNode(node: Node) {
     if (node.type === "textbox") this.textboxes.set(node.id, node);
-    else if (node.type === "mergebox") this.mergeboxes.set(node.id, node);
+    if (node.type === "video-editor") this.videoEditors.set(node.id, node);
     return node;
   }
 
@@ -60,7 +60,7 @@ export class ProjectRegistry {
 
   removeNode(id: string) {
     this.textboxes.delete(id);
-    this.mergeboxes.delete(id);
+    this.videoEditors.delete(id);
   }
 
   patchNode(id: string, node: Partial<Node>) {
@@ -69,18 +69,17 @@ export class ProjectRegistry {
     const newNode = Object.assign({}, original, node);
     if (original.type === "textbox")
       this.textboxes.set(id, newNode as TextboxNode);
-    else if (original.type === "mergebox")
-      this.mergeboxes.set(id, newNode as MergeboxNode);
+    if (original.type === "video-editor")
+      this.videoEditors.set(id, newNode as VideoEditorNode);
     this.touch(id);
   }
 
   public getNode(id: string): Node | undefined {
-    return this.textboxes?.get(id) || this.mergeboxes?.get(id);
+    return this.textboxes?.get(id);
   }
 
   public getOriginNode(id: string): Node | undefined {
-    if (this.origin)
-      return this.origin.textboxes[id] || this.origin.mergeboxes[id];
+    if (this.origin) return this.origin.textboxes[id];
   }
 
   public fork() {
@@ -90,15 +89,15 @@ export class ProjectRegistry {
   private _convertProjectRootToShadow(project: ProjectRoot) {
     if (!project) return;
     const newTextboxes = new Map<TextboxNode>();
-    const newMergeboxes = new Map<MergeboxNode>();
+    const newVideoEditors = new Map<VideoEditorNode>();
     Object.values(project.textboxes).map((node) =>
       newTextboxes.set(node.id, node)
     );
-    Object.values(project.mergeboxes).map((node) =>
-      newMergeboxes.set(node.id, node)
+    Object.values(project.vEditors).map((node) =>
+      newVideoEditors.set(node.id, node)
     );
     this.root.set("textboxes", newTextboxes);
-    this.root.set("mergeboxes", newMergeboxes);
+    this.root.set("vEditors", newVideoEditors);
   }
 
   public resetWithFork() {
@@ -111,21 +110,21 @@ export class ProjectRegistry {
 
   public ___loadRegistry(id: string, root: ProjectRoot) {
     this.id = id;
-    this._shadowRoot = doc.getMap<Map<TextboxNode> | Map<MergeboxNode>>(
+    this._shadowRoot = doc.getMap<Map<TextboxNode> | Map<VideoEditorNode>>(
       `board-${id}`
     );
     this._convertProjectRootToShadow(root);
   }
 
   public ___fetchRoot(): ProjectRoot {
-    return ["textboxes", "mergeboxes"].reduce(
+    return ["textboxes", "vEditors"].reduce(
       (result, field) => {
         this.root.get(field)?.forEach((value: Node) => {
           result[field][value.id] = value;
         });
         return result;
       },
-      { textboxes: {}, mergeboxes: {} } as any
+      { textboxes: {}, vEditors: {} } as any
     );
   }
 
@@ -144,9 +143,10 @@ export class ProjectRegistry {
     }
     return boxes;
   }
-  get allMergeboxes() {
-    let boxes: MergeboxNode[] = [];
-    const it = this.mergeboxes?.values();
+
+  get allVideoEditors() {
+    let boxes: VideoEditorNode[] = [];
+    const it = this.videoEditors?.values();
     if (!it) return [];
     let result = it.next();
     while (!result.done) {
