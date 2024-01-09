@@ -7,10 +7,10 @@ export const Creator = () => {
 
   return (
     <div className="w-full h-full relative flex">
-      <div className="w-[30%] bg-green-500">
+      <div className="w-[350px] border-right border-r-gray-700">
         <SourcePanel />
       </div>
-      <div className="flex-1 bg-yellow-500 text-black">Canvas Root</div>
+      <div className="flex-1 bg-yellow-500 text-black"></div>
     </div>
   );
 };
