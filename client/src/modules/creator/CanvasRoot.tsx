@@ -5,14 +5,16 @@ import { memo, useEffect, useRef } from "react";
 import ProjectNode from "./nodes/ProjectNode";
 import { generateId } from "modules/core/project-utils";
 import { createVideoEditorNodeFromVideoClip } from "./utils/VideoEditorUtils";
+import PreviewNode from "./nodes/PreviewNode";
 
-const InfiniteCanvas = ({ frame }: { frame: string }) => {
+const InfiniteCanvas = ({ frame }: { frame: number }) => {
   const scale = AppStore.canvas.scale;
   const screen = AppStore.canvas.screen;
   const nodes = AppStore.project.rootNodes;
   // const { selectedNode: selected } = getUiState();
   const container = AppStore.canvas.container;
   const { x, y } = AppStore.canvas.pointer;
+  const dragPreview = AppStore.project.dragPreview;
 
   return (
     <div
@@ -31,7 +33,7 @@ const InfiniteCanvas = ({ frame }: { frame: string }) => {
           selected={false}
         ></ProjectNode>
       ))}
-      {/* }<PreviewNode frame={frame} pointerX={x} pointerY={y} /> {*/}
+      <PreviewNode screen={screen} dragPreview={dragPreview} />
     </div>
   );
 };

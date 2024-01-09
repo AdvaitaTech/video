@@ -42,11 +42,11 @@ export function getRenderLoop(fps = 15, draw: () => void) {
 }
 
 export const useRenderLoop = (fps: number = 15) => {
-  const [frame, setFrame] = useState("0");
+  const [frame, setFrame] = useState(0);
   const loop = useRef<RenderLoop>(
     getRenderLoop(fps, () => {
       if (AppStore.canvas.shouldRender) {
-        setFrame(`${performance.now()}`);
+        setFrame(performance.now());
         AppStore.canvas.shouldRender = false;
       }
     })

@@ -1,4 +1,89 @@
-import { memo } from "react";
+import AppStore from "modules/state/AppStore";
+import { RefObject, memo, useRef } from "react";
+
+const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
+  const onDocumentMouseMove = (e: MouseEvent) => {
+    e.stopPropagation();
+    // calculate position of mouse on canvasRef
+    let x = e.clientX;
+    let y = e.clientY;
+    const canvas = AppStore.canvas.ref;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    // check if mouse is inside rect
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+      return;
+    } else {
+      let screen = AppStore.canvas.screen;
+      let deltaX = x - rect.left;
+      let deltaY = y - rect.top;
+      console.log("mouse in canvas", deltaX, screen.left, deltaY, screen.top);
+      // set preview position
+      AppStore.project.dragPreview = {
+        type: "video",
+        url: videoRef.current?.src || "",
+        duration: videoRef.current?.duration || 0,
+        originX: screen.left + deltaX,
+        originY: screen.top + deltaY,
+        showPreviewNode: true,
+      };
+      AppStore.canvas.shouldRender = true;
+    }
+  };
+
+  const onDocumentMouseUp = (e: MouseEvent) => {
+    console.log("onMouseUp triggered");
+    e.stopPropagation();
+    try {
+      // set dragging to false
+      // disable preview
+      let x = e.clientX;
+      let y = e.clientY;
+      const canvas = AppStore.canvas.ref;
+      if (!canvas) throw Error("Canvas is null");
+      const rect = canvas.getBoundingClientRect();
+      // check if mouse is inside rect
+      if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+      } else {
+        let deltaX = x - rect.left;
+        let deltaY = y - rect.top;
+      }
+    } catch (e) {
+    } finally {
+      AppStore.project.dragPreview = null;
+      document.removeEventListener("mousemove", onDocumentMouseMove);
+      document.removeEventListener("mouseup", onDocumentMouseUp);
+    }
+  };
+
+  return {
+    onMouseDown: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      // set dragging to true
+      console.log("onMouseDown triggered", videoRef.current?.duration);
+      AppStore.project.dragPreview = {
+        showPreviewNode: false,
+        type: "video",
+        url: videoRef.current?.src || "",
+        duration: videoRef.current?.duration || 0,
+        originX: 0,
+        originY: 0,
+      };
+      document.addEventListener("mousemove", onDocumentMouseMove);
+      document.addEventListener("mouseup", onDocumentMouseUp);
+      e.stopPropagation();
+    },
+  };
+};
+
+const SourcePanelVideo = ({ name, url }: { name: string; url: string }) => {
+  let videoRef = useRef<HTMLVideoElement>(null);
+  return (
+    <div {...getSourcePanelMouseEvents(videoRef)}>
+      <video src={url} ref={videoRef}></video>
+      <div className="text-md ">{name}</div>
+    </div>
+  );
+};
 
 export const SourcePanel = () => {
   const videos = [
@@ -20,15 +105,13 @@ export const SourcePanel = () => {
       url: "https://www.shutterstock.com/shutterstock/videos/1064110957/preview/stock-footage-the-himalayas-everest-beautiful-mountain-range-winter-inspiring-landscape-snow-cold-sea-of-clouds.mp4",
     },
   ];
+
   return (
     <div className="w-full h-full p-5">
       <h3 className="text-md font-bold">Add a Video</h3>
       <div className="flex flex-wrap flex-row gap-5 pt-5">
-        {videos.map((video) => (
-          <div>
-            <video src={video.url}></video>
-            <div className="text-md ">{video.name}</div>
-          </div>
+        {videos.map((video, index) => (
+          <SourcePanelVideo name={video.name} url={video.url} key={index} />
         ))}
       </div>
     </div>

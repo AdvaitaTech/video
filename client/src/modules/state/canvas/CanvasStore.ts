@@ -49,6 +49,7 @@ const getInitialCanvasState = (): CanvasState => {
 
 export default class CanvasStore {
   data: CanvasState = getInitialCanvasState();
+  private _ref: HTMLDivElement | null = null;
   initialize(width: number, height: number) {
     const containerWidth = width;
     const containerHeight = height;
@@ -66,6 +67,16 @@ export default class CanvasStore {
       },
     };
   }
+
+  public get ref() {
+    if (!this._ref) throw new Error("Canvas ref is not set");
+    return this._ref;
+  }
+
+  public set ref(ref: HTMLDivElement) {
+    this._ref = ref;
+  }
+
   public get screen() {
     const { x, y, z } = this.camera;
     const aspect = this.aspect;

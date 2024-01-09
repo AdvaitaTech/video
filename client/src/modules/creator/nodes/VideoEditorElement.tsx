@@ -21,7 +21,7 @@ const VideoEditorElement = ({
         ref={ref}
         id={node.id}
         data-id={node.id}
-        className="flex flex-col border-2 rounded-lg w-full h-full select-none p-2 z-10"
+        className="flex flex-col border-2 rounded-lg w-full h-full select-none p-2 z-10 bg-white"
       ></div>
     </Position>
   );

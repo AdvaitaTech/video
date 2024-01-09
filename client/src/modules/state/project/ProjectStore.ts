@@ -2,12 +2,18 @@ import { CanvasPosition } from "modules/core/Position";
 import { generateId } from "modules/core/project-utils";
 import AppStore from "../AppStore";
 import { ProjectRegistry, ProjectRoot } from "./ProjectRegistry";
-import { Comment, Node, NodeType, RootNode } from "./ProjectTypes";
+import {
+  Node,
+  RootNode,
+  VideoDragPreview,
+  VideoEditorNode,
+} from "./ProjectTypes";
 import { Board, User } from "modules/core/NetworkTypes";
 
 export default class ProjectStore {
   public board: Board | null = null;
   private author: User | null = null;
+  private _drag: VideoDragPreview | null = null;
   private _registry = new ProjectRegistry();
 
   public get registry() {
@@ -27,7 +33,6 @@ export default class ProjectStore {
 
   public addVideoEditor(id: string, node: VideoEditorNode) {
     this.registry.addNode({
-      id,
       ...node,
     });
     AppStore.canvas.shouldRender = true;
@@ -122,5 +127,13 @@ export default class ProjectStore {
     return ([] as RootNode[])
       .concat(this.registry.allTextboxes)
       .concat(this.registry.allVideoEditors);
+  }
+
+  public get dragPreview() {
+    return this._drag;
+  }
+
+  public set dragPreview(preview: VideoDragPreview | null) {
+    this._drag = preview;
   }
 }

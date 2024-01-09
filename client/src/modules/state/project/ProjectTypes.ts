@@ -94,3 +94,16 @@ export type AllEventTypes =
   | FocusEvent<HTMLDivElement>
   | KeyboardEvent<HTMLDivElement>
   | MouseEvent<HTMLDivElement>;
+
+export type DragPreview = {
+  showPreviewNode: boolean;
+  duration: number;
+  originX: number;
+  originY: number;
+};
+
+export type VideoDragPreview = {
+  type: "video";
+  url: string;
+  duration: number;
+} & DragPreview;
