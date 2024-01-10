@@ -11,6 +11,7 @@ export function createVideoEditorNodeFromVideoClip(
   position: CanvasPosition,
   clip: {
     url: string;
+    duration: number;
   }
 ): VideoEditorNode {
   let videoClip: VideoClip = {
@@ -19,9 +20,9 @@ export function createVideoEditorNodeFromVideoClip(
     type: "video-clip",
     url: clip.url,
     start: 0,
-    end: 0,
+    end: clip.duration,
     clipStart: 0,
-    clipEnd: 0,
+    clipEnd: clip.duration,
   };
   let track: VideoTrack = {
     id: generateId(),

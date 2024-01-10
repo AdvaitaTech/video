@@ -1,5 +1,8 @@
+import { PIXELS_PER_SECOND } from "modules/core/constants";
 import AppStore from "modules/state/AppStore";
 import { RefObject, memo, useRef } from "react";
+import { createVideoEditorNodeFromVideoClip } from "./utils/VideoEditorUtils";
+import { generateId } from "modules/core/project-utils";
 
 const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
   const onDocumentMouseMove = (e: MouseEvent) => {
@@ -15,9 +18,9 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
       return;
     } else {
       let screen = AppStore.canvas.screen;
-      let deltaX = x - rect.left;
-      let deltaY = y - rect.top;
-      console.log("mouse in canvas", deltaX, screen.left, deltaY, screen.top);
+      let scale = AppStore.canvas.scale;
+      let deltaX = (x - rect.left) / scale.x;
+      let deltaY = (y - rect.top) / scale.y;
       // set preview position
       AppStore.project.dragPreview = {
         type: "video",
@@ -26,6 +29,8 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
         originX: screen.left + deltaX,
         originY: screen.top + deltaY,
         showPreviewNode: true,
+        height: AppStore.project.dragPreview?.height || 0,
+        width: AppStore.project.dragPreview?.width || 0,
       };
       AppStore.canvas.shouldRender = true;
     }
@@ -45,8 +50,18 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
       // check if mouse is inside rect
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
       } else {
-        let deltaX = x - rect.left;
-        let deltaY = y - rect.top;
+        let dragPreview = AppStore.project.dragPreview;
+        if (!dragPreview) throw Error("Drag preview is null");
+        let left = dragPreview.originX;
+        let top = dragPreview.originY;
+        let width = dragPreview.width;
+        let height = dragPreview.height;
+        let node = createVideoEditorNodeFromVideoClip(
+          generateId(),
+          { top, left, width, height },
+          { url: dragPreview.url, duration: dragPreview.duration }
+        );
+        AppStore.project.addVideoEditor(node.id, node);
       }
     } catch (e) {
     } finally {
@@ -67,6 +82,8 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
         duration: videoRef.current?.duration || 0,
         originX: 0,
         originY: 0,
+        height: 0,
+        width: 0,
       };
       document.addEventListener("mousemove", onDocumentMouseMove);
       document.addEventListener("mouseup", onDocumentMouseUp);

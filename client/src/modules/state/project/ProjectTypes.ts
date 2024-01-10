@@ -100,10 +100,12 @@ export type DragPreview = {
   duration: number;
   originX: number;
   originY: number;
+  // rendered values set by the preview node
+  height: number;
+  width: number;
 };
 
 export type VideoDragPreview = {
   type: "video";
   url: string;
-  duration: number;
 } & DragPreview;

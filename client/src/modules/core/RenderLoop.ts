@@ -36,12 +36,12 @@ class RenderLoop {
 }
 
 let renderLoop: RenderLoop;
-export function getRenderLoop(fps = 15, draw: () => void) {
+export function getRenderLoop(fps = 30, draw: () => void) {
   if (!renderLoop) return new RenderLoop(fps, draw);
   else return renderLoop;
 }
 
-export const useRenderLoop = (fps: number = 15) => {
+export const useRenderLoop = (fps: number = 30) => {
   const [frame, setFrame] = useState(0);
   const loop = useRef<RenderLoop>(
     getRenderLoop(fps, () => {

@@ -1,11 +1,14 @@
 import useRenderLoop from "modules/core/RenderLoop";
 import AppStore from "modules/state/AppStore";
 import useSize from "@react-hook/size";
-import { memo, useEffect, useRef } from "react";
+import { RefObject, memo, useEffect, useRef } from "react";
 import ProjectNode from "./nodes/ProjectNode";
 import { generateId } from "modules/core/project-utils";
 import { createVideoEditorNodeFromVideoClip } from "./utils/VideoEditorUtils";
 import PreviewNode from "./nodes/PreviewNode";
+
+const CANVAS_TOP = 0;
+const CANVAS_LEFT = 350;
 
 const InfiniteCanvas = ({ frame }: { frame: number }) => {
   const scale = AppStore.canvas.scale;
@@ -38,6 +41,28 @@ const InfiniteCanvas = ({ frame }: { frame: number }) => {
   );
 };
 
+const wheelListener = (e: WheelEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+  const friction = 1;
+  const event = e as WheelEvent;
+  const deltaX = event.deltaX * friction;
+  const deltaY = event.deltaY * friction;
+  if (!event.ctrlKey) {
+    AppStore.canvas.moveCamera(deltaX, deltaY);
+  } else {
+    AppStore.canvas.zoomCamera(deltaX, deltaY);
+  }
+};
+
+const pointerMoveListener = (e: PointerEvent) => {
+  const screen = AppStore.canvas.screen;
+  const scale = AppStore.canvas.scale;
+  const clientX = event.clientX - CANVAS_LEFT;
+  const clientY = event.clientY - CANVAS_TOP;
+  AppStore.canvas.movePointer(clientX, clientY);
+};
+
 export const CanvasRoot = () => {
   const canvas = useRef<HTMLDivElement>(null);
   const [width, height] = useSize(canvas);
@@ -56,6 +81,17 @@ export const CanvasRoot = () => {
     AppStore.project.addVideoEditor(generateId(), node);
   }, [width, height]);
   const frame = useRenderLoop();
+
+  useEffect(() => {
+    if (!canvas.current) return;
+    canvas.current.addEventListener("wheel", wheelListener, { passive: false });
+    canvas.current.addEventListener("pointermove", pointerMoveListener);
+
+    return () => {
+      canvas.current?.removeEventListener("wheel", wheelListener);
+      canvas.current?.removeEventListener("pointermove", pointerMoveListener);
+    };
+  }, [canvas]);
 
   return (
     <div className="w-full h-full relative flex flex-col">
