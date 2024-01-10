@@ -6,6 +6,7 @@ import ProjectNode from "./nodes/ProjectNode";
 import { generateId } from "modules/core/project-utils";
 import { createVideoEditorNodeFromVideoClip } from "./utils/VideoEditorUtils";
 import PreviewNode from "./nodes/PreviewNode";
+import { calculateVideoElementDimensions } from "./nodes/VideoEditorElement";
 
 const CANVAS_TOP = 0;
 const CANVAS_LEFT = 350;
@@ -56,10 +57,8 @@ const wheelListener = (e: WheelEvent) => {
 };
 
 const pointerMoveListener = (e: PointerEvent) => {
-  const screen = AppStore.canvas.screen;
-  const scale = AppStore.canvas.scale;
-  const clientX = event.clientX - CANVAS_LEFT;
-  const clientY = event.clientY - CANVAS_TOP;
+  const clientX = e.clientX - CANVAS_LEFT;
+  const clientY = e.clientY - CANVAS_TOP;
   AppStore.canvas.movePointer(clientX, clientY);
 };
 
@@ -69,10 +68,18 @@ export const CanvasRoot = () => {
   useEffect(() => {
     if (width === 0 || height === 0) return;
     AppStore.canvas.initialize(width, height);
+    let url =
+      "https://www.shutterstock.com/shutterstock/videos/1080319025/preview/stock-footage-abstract-tech-earth-globalization-in-d-motion-graphic-concept-transmit-ai-networking-on-fiber.mp4";
+    let { width: w, height: h } = calculateVideoElementDimensions([
+      { clips: [{ start: 0, end: 20, url }] },
+    ]);
     let node = createVideoEditorNodeFromVideoClip(
       generateId(),
-      { top: 1400, left: 1400, width: 500, height: 500 },
-      { url: "" }
+      { top: 1400, left: 1400, width: w, height: h },
+      {
+        url: url,
+        duration: 20,
+      }
     );
     AppStore.project.addTextbox(generateId(), {
       position: { top: 1200, left: 1200, width: 200, height: 100 },

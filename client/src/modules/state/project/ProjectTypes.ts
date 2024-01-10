@@ -79,7 +79,7 @@ export interface VideoClip extends GenericClip {
 export interface VideoEditorNode extends GenericNode {
   type: "video-editor";
   position: CanvasPosition;
-  tracks: GenericTrack[];
+  tracks: VideoTrack[];
 }
 
 export interface PreviewNode {
