@@ -15,7 +15,7 @@ export const Creator = () => {
 
   return (
     <div className="w-full h-full relative flex">
-      <div className="w-[350px] border-r border-r-gray-500">
+      <div className="w-[350px] border-r">
         <SourcePanel />
       </div>
       <div className="flex-1 text-black" ref={canvas}>

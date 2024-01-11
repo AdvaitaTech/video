@@ -100,7 +100,7 @@ const SourcePanelVideo = ({ name, url }: { name: string; url: string }) => {
   return (
     <div {...getSourcePanelMouseEvents(videoRef)}>
       <video src={url} ref={videoRef}></video>
-      <div className="text-md ">{name}</div>
+      <div className="text-md text-primary-900">{name}</div>
     </div>
   );
 };
@@ -127,8 +127,8 @@ export const SourcePanel = () => {
   ];
 
   return (
-    <div className="w-full h-full p-5">
-      <h3 className="text-md font-bold">Add a Video</h3>
+    <div className="w-full h-full p-5 bg-background">
+      <h3 className="text-md font-bold text-primary-900">Add a Video</h3>
       <div className="flex flex-wrap flex-row gap-5 pt-5">
         {videos.map((video, index) => (
           <SourcePanelVideo name={video.name} url={video.url} key={index} />

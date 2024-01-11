@@ -75,16 +75,12 @@ export const CanvasRoot = () => {
     ]);
     let node = createVideoEditorNodeFromVideoClip(
       generateId(),
-      { top: 1400, left: 1400, width: w, height: h },
+      { top: 1200, left: 900, width: w, height: h },
       {
         url: url,
         duration: 20,
       }
     );
-    AppStore.project.addTextbox(generateId(), {
-      position: { top: 1200, left: 1200, width: 200, height: 100 },
-      text: "Hello World",
-    });
     AppStore.project.addVideoEditor(generateId(), node);
   }, [width, height]);
   const frame = useRenderLoop();
@@ -103,7 +99,7 @@ export const CanvasRoot = () => {
   return (
     <div className="w-full h-full relative flex flex-col">
       <div
-        className="relative overflow-hidden overscroll-none bg-slate-100 flex-1"
+        className="relative overflow-hidden overscroll-none bg-background flex-1"
         ref={canvas}
       >
         <InfiniteCanvas frame={frame}></InfiniteCanvas>

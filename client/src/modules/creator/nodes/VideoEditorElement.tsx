@@ -54,16 +54,22 @@ const getVideoElementRows = (
     {
       name: "tracks",
       width: width,
-      height: tracks.reduce((a, t) => a + 50, 0),
+      height: tracks.reduce((a, t) => a + 40, 0),
       component: () => {
         return (
           <div className="w-full h-full">
             {tracks.map((track, index) => {
               return (
                 <div key={index}>
-                  <div className="h-[5px] border-[1px]"></div>
-                  <div className="h-[40px] bg-blue-500 rounded"></div>
-                  <div className="h-[5px] border-[1px]"></div>
+                  <div className="h-[5px]"></div>
+                  <div className="h-[30px] bg-background">
+                    <div className="relative w-full h-full bg-secondary-500 border-2 border-secondary-200 rounded-lg">
+                      <div className="absolute right-[5px] top-[3px] bottom-[3px] w-[3px] bg-secondary-200 rounded"></div>
+                      <div className="absolute left-[5px] top-[3px] bottom-[3px] w-[3px] bg-secondary-200 rounded"></div>
+                      <div></div>
+                    </div>
+                  </div>
+                  <div className="h-[5px]"></div>
                 </div>
               );
             })}
@@ -119,7 +125,11 @@ const VideoEditorElement = ({
           return (
             <div
               key={row.name}
-              style={{ width: row.width, height: row.height }}
+              style={{
+                width: row.width,
+                height: row.height,
+                overflow: "hidden",
+              }}
             >
               {row.component()}
             </div>
