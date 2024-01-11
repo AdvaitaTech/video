@@ -3,6 +3,8 @@ import AppStore from "modules/state/AppStore";
 import { RefObject, memo, useRef } from "react";
 import { createVideoEditorNodeFromVideoClip } from "./utils/VideoEditorUtils";
 import { generateId } from "modules/core/project-utils";
+import { calculateVideoElementDimensions } from "./nodes/VideoEditorElement";
+import { VideoDragPreview } from "modules/state/project/ProjectTypes";
 
 const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
   const onDocumentMouseMove = (e: MouseEvent) => {
@@ -11,7 +13,7 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
     let x = e.clientX;
     let y = e.clientY;
     const canvas = AppStore.canvas.ref;
-    if (!canvas) return;
+    if (!canvas || !AppStore.project.dragPreview) return;
     const rect = canvas.getBoundingClientRect();
     // check if mouse is inside rect
     if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
@@ -23,14 +25,10 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
       let deltaY = (y - rect.top) / scale.y;
       // set preview position
       AppStore.project.dragPreview = {
-        type: "video",
-        url: videoRef.current?.src || "",
-        duration: videoRef.current?.duration || 0,
+        ...(AppStore.project.dragPreview as VideoDragPreview),
         originX: screen.left + deltaX,
         originY: screen.top + deltaY,
         showPreviewNode: true,
-        height: AppStore.project.dragPreview?.height || 0,
-        width: AppStore.project.dragPreview?.width || 0,
       };
       AppStore.canvas.shouldRender = true;
     }
@@ -74,7 +72,12 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
   return {
     onMouseDown: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       // set dragging to true
+      let duration = videoRef.current?.duration || 0;
+      let url = videoRef.current?.src || "";
       console.log("onMouseDown triggered", videoRef.current?.duration);
+      let { height, width } = calculateVideoElementDimensions([
+        { clips: [{ start: 0, end: duration, url }] },
+      ]);
       AppStore.project.dragPreview = {
         showPreviewNode: false,
         type: "video",
@@ -82,8 +85,8 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
         duration: videoRef.current?.duration || 0,
         originX: 0,
         originY: 0,
-        height: 0,
-        width: 0,
+        height,
+        width,
       };
       document.addEventListener("mousemove", onDocumentMouseMove);
       document.addEventListener("mouseup", onDocumentMouseUp);
