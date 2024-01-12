@@ -103,15 +103,16 @@ const getVideoElementRows = (
       component: () => {
         return (
           <div
-            className="w-full h-full flex items-center justify-center"
+            className="w-full h-full flex flex-col"
             style={{
               padding: `0 ${paddingX / 2}px`,
             }}
           >
+            <div className="bg-green-100 flex-1 w-full"></div>
             {tracks.map((track, index) => {
               return (
                 <div key={index} className="w-full">
-                  <div className="h-[5px]"></div>
+                  {index !== 0 ? <div className="h-[5px]"></div> : null}
                   <div className="h-[30px] bg-secondary-100 w-full relative rounded-sm">
                     {track.clips.map((clip, index) => {
                       return (
@@ -137,10 +138,10 @@ const getVideoElementRows = (
                       );
                     })}
                   </div>
-                  <div className="h-[5px]"></div>
                 </div>
               );
             })}
+            <div className="bg-green-100 flex-1 w-full"></div>
           </div>
         );
       },

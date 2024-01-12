@@ -30,6 +30,17 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
         originY: screen.top + deltaY,
         showPreviewNode: true,
       };
+      let left = screen.left + deltaX;
+      let top = screen.top + deltaY;
+      let overlappingNode = AppStore.project.rootNodes.find((node) => {
+        return (
+          node.position.top < top &&
+          node.position.top + node.position.height > top &&
+          node.position.left < left &&
+          node.position.left + node.position.width > left
+        );
+      });
+      console.log("node", overlappingNode);
       AppStore.canvas.shouldRender = true;
     }
   };
