@@ -42,3 +42,9 @@ export function createVideoEditorNodeFromVideoClip(
     tracks: [track],
   };
 }
+
+export function showTime(time: number): string {
+  let minutes = Math.floor(time / 60);
+  let seconds = Math.floor(time % 60);
+  return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+}
