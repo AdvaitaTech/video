@@ -50,6 +50,8 @@ export interface GenericTrack {
   parent?: string;
   index: number;
   tracks?: [];
+  highlightAbove?: boolean;
+  highlightBelow?: boolean;
 }
 
 export interface VideoTrack extends GenericTrack {

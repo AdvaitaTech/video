@@ -10,7 +10,13 @@ import clsx from "clsx";
 import { showTime } from "../utils/VideoEditorUtils";
 
 const getVideoElementRows = (
-  tracks: { clips: { start: number; end: number; url: string }[] }[]
+  tracks: {
+    clips: { start: number; end: number; url: string }[];
+    id?: string;
+    highlightAbove?: boolean;
+    highlightBelow?: boolean;
+  }[],
+  id?: string
 ) => {
   let duration =
     tracks
@@ -96,10 +102,7 @@ const getVideoElementRows = (
     {
       name: "tracks",
       width: width,
-      height: Math.max(
-        tracks.reduce((a, t) => a + 40, 0),
-        200
-      ),
+      height: Math.max(tracks.reduce((a, t) => a + 30 + 5, 0) + 5, 200),
       component: () => {
         return (
           <div
@@ -108,12 +111,29 @@ const getVideoElementRows = (
               padding: `0 ${paddingX / 2}px`,
             }}
           >
-            <div className="bg-green-100 flex-1 w-full"></div>
+            <div
+              id={`${id || ""}-pre`}
+              data-action="add-track"
+              data-index={0}
+              className="flex-1 w-full"
+            ></div>
             {tracks.map((track, index) => {
               return (
                 <div key={index} className="w-full">
-                  {index !== 0 ? <div className="h-[5px]"></div> : null}
-                  <div className="h-[30px] bg-secondary-100 w-full relative rounded-sm">
+                  <div
+                    id={`${track.id || ""}-pre`}
+                    data-action="add-track"
+                    data-index={index}
+                    className={clsx("h-[3px] my-[1px] rounded-lg", {
+                      "bg-secondary-400": track.highlightAbove,
+                    })}
+                  ></div>
+                  <div
+                    id={track.id || ""}
+                    data-action="add-clip"
+                    data-index="0"
+                    className="h-[30px] bg-secondary-100 w-full relative rounded-sm"
+                  >
                     {track.clips.map((clip, index) => {
                       return (
                         <div
@@ -138,10 +158,25 @@ const getVideoElementRows = (
                       );
                     })}
                   </div>
+                  {index === tracks.length - 1 ? (
+                    <div
+                      id={`${track.id || ""}-post`}
+                      data-action="add-track"
+                      data-index={index + 1}
+                      className={clsx("h-[3px] my-[1px]", {
+                        "bg-secondary-400": track.highlightBelow,
+                      })}
+                    ></div>
+                  ) : null}
                 </div>
               );
             })}
-            <div className="bg-green-100 flex-1 w-full"></div>
+            <div
+              id={`${id || ""}-post`}
+              data-action="add-track"
+              data-index={tracks.length}
+              className="flex-1 w-full"
+            ></div>
           </div>
         );
       },
@@ -180,7 +215,11 @@ const VideoEditorElement = ({
   let rows = getVideoElementRows(
     node.tracks.map((t) => ({
       clips: t.clips.map((c) => ({ start: c.start, end: c.end, url: c.url })),
-    }))
+      id: t.id,
+      highlightAbove: t.highlightAbove,
+      highlightBelow: t.highlightBelow,
+    })),
+    node.id
   );
   return (
     <Position screen={screen} {...node.position}>

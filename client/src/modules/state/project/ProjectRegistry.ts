@@ -79,11 +79,12 @@ export class ProjectRegistry {
   }
 
   public getNode(id: string): Node | undefined {
-    return this.textboxes?.get(id);
+    return this.textboxes?.get(id) || this.videoEditors?.get(id);
   }
 
   public getOriginNode(id: string): Node | undefined {
-    if (this.origin) return this.origin.textboxes[id];
+    if (this.origin)
+      return this.origin.textboxes[id] || this.origin.vEditors[id];
   }
 
   public fork() {
