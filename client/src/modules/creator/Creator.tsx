@@ -1,6 +1,6 @@
 import useRenderLoop from "modules/core/RenderLoop";
 import { memo, useEffect, useRef } from "react";
-import SourcePanel from "./SourcePanel";
+import SourcePanel from "./SourcePanel/SourcePanel";
 import CanvasRoot from "./CanvasRoot";
 import AppStore from "modules/state/AppStore";
 
