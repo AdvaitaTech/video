@@ -37,6 +37,7 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
         originY: screen.top + deltaY,
         showPreviewNode: true,
       };
+      AppStore.canvas.shouldRender = true;
       let left = screen.left + deltaX;
       let top = screen.top + deltaY;
       let overlappingNode = AppStore.project.rootNodes.find((node) => {
@@ -54,14 +55,6 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
 
         // check if any nodes are overlapping
         let rectOverlap = AppStore.project.rootNodes.find((node) => {
-          console.log(
-            "checking",
-            node.position,
-            originX < node.position.left + node.position.width,
-            originX + width > node.position.left,
-            originY > node.position.top + node.position.height,
-            originY + height < node.position.top
-          );
           return (
             originX < node.position.left + node.position.width &&
             originX + width > node.position.left &&
@@ -69,22 +62,12 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
             originY + height > node.position.top
           );
         });
-        console.log(
-          "checking for overlap",
-          rectOverlap,
-          originX,
-          originY,
-          width,
-          height
-        );
         if (rectOverlap) {
           AppStore.project.dragPreview.showPreviewNode = false;
-          AppStore.canvas.shouldRender = true;
         }
         return;
       } else {
         AppStore.project.dragPreview.showPreviewNode = false;
-        AppStore.canvas.shouldRender = true;
       }
       let originNode = AppStore.project.getOriginNode(
         overlappingNode?.id || ""
@@ -120,7 +103,7 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
             } else {
               AppStore.project.setNode(originNode.id, {
                 tracks: [
-                  ...originNode.tracks.slice(0, Math.max(0, index - 1)),
+                  ...originNode.tracks.slice(0, Math.max(0, index)),
                   { ...originNode.tracks[index], highlightAbove: true },
                   ...originNode.tracks.slice(index + 1),
                 ],
@@ -129,7 +112,6 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
           }
         }
       });
-      AppStore.canvas.shouldRender = true;
     }
   };
 
@@ -188,13 +170,11 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
             { url: dragPreview.url, duration: dragPreview.duration }
           );
           AppStore.project.addVideoEditor(node.id, node);
-          AppStore.canvas.shouldRender = true;
         } else {
           let originNode = AppStore.project.getOriginNode(
             overlappingNode?.id || ""
           ) as VideoEditorNode;
           if (!overlappingNode || !originNode) {
-            AppStore.canvas.shouldRender = true;
             return;
           }
           let elementIds = [
@@ -245,7 +225,7 @@ const getSourcePanelMouseEvents = (videoRef: RefObject<HTMLVideoElement>) => {
                 } else {
                   AppStore.project.setNode(originNode.id, {
                     tracks: [
-                      ...originNode.tracks.slice(0, Math.max(0, index - 1)),
+                      ...originNode.tracks.slice(0, Math.max(0, index)),
                       track,
                       ...originNode.tracks.slice(index),
                     ],
