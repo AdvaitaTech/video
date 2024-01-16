@@ -146,96 +146,49 @@ export const getSourcePanelMouseEvents = (
     if (!canvas || !AppStore.project.dragPreview) return;
     const rect = canvas.getBoundingClientRect();
     // check if mouse is inside rect
-    if (!isMouseInsideCanvas(x, y, rect)) {
-      AppStore.project.dragPreview.showPreviewNode = false;
-      AppStore.canvas.shouldRender = true;
-      return;
-    } else {
-      let screen = AppStore.canvas.screen;
-      let scale = AppStore.canvas.scale;
-      let deltaX = (x - rect.left) / scale.x;
-      let deltaY = (y - rect.top) / scale.y;
+    AppStore.project.dragPreview.showPreviewNode = false;
+    AppStore.project.resetWithFork();
+    AppStore.canvas.shouldRender = true;
+    let { x: left, y: top } = getMousePositionOnCanvas(x, y, rect);
+    let overlappingNode = getMouseOverlappingNode(x, y, rect);
+    let previewOverlap = getPreviewOverlappingNode({
+      ...AppStore.project.dragPreview,
+      originX: left,
+      originY: top,
+    });
+    console.log("previewOverlap", previewOverlap, overlappingNode);
+    if (isMouseInsideCanvas(x, y, rect)) {
       // set preview position
-      AppStore.project.dragPreview = {
-        ...(AppStore.project.dragPreview as VideoDragPreview),
-        originX: screen.left + deltaX,
-        originY: screen.top + deltaY,
-        showPreviewNode: true,
-      };
-      AppStore.canvas.shouldRender = true;
-      let { x: left, y: top } = getMousePositionOnCanvas(x, y, rect);
-      let overlappingNode = AppStore.project.rootNodes.find((node) => {
-        return (
-          node.position.top < top &&
-          node.position.top + node.position.height > top &&
-          node.position.left < left &&
-          node.position.left + node.position.width > left
-        );
-      });
-      AppStore.project.resetWithFork();
-      if (!overlappingNode) {
-        let { originX, originY, width, height } = AppStore.project
-          .dragPreview as VideoDragPreview;
-
-        // check if any nodes are overlapping
-        let rectOverlap = AppStore.project.rootNodes.find((node) => {
-          return (
-            originX < node.position.left + node.position.width &&
-            originX + width > node.position.left &&
-            originY < node.position.top + node.position.height &&
-            originY + height > node.position.top
-          );
-        });
-        if (rectOverlap) {
-          AppStore.project.dragPreview.showPreviewNode = false;
-        }
-        return;
-      } else {
-        AppStore.project.dragPreview.showPreviewNode = false;
-      }
-      let originNode = AppStore.project.getOriginNode(
-        overlappingNode?.id || ""
-      ) as VideoEditorNode;
-      let elementIds = [
-        originNode.id,
-        ...originNode.tracks.map((t) => t.id),
-      ].flatMap((id) => [id, `${id}-pre`, `${id}-post`]);
-      elementIds.forEach((id) => {
-        let element = document.getElementById(id);
-        if (!element) return;
-        let rect = element.getBoundingClientRect();
-        // check if mouse is inside getBoundingClientRect
-        if (
-          x > rect.left &&
-          x < rect.right &&
-          y > rect.top &&
-          y < rect.bottom
-        ) {
+      console.log("in canvas");
+      if (previewOverlap && overlappingNode) {
+        // show track preview
+        console.log("getting track");
+        let trackId = getOverlappingTrackIdOfNode(x, y, overlappingNode.id);
+        console.log("trackId", trackId);
+        if (trackId) {
+          let element = document.getElementById(trackId);
+          if (!element) return;
           let action = element.getAttribute("data-action");
           let index = element.getAttribute("data-index")
             ? parseInt(element.getAttribute("data-index") || "")
             : null;
+          console.log("action", element, action, index);
           if (!action || index === null) return;
-          if (action === "add-track") {
-            if (index === originNode.tracks.length) {
-              AppStore.project.setNode(originNode.id, {
-                tracks: [
-                  ...originNode.tracks.slice(0, Math.max(0, index - 1)),
-                  { ...originNode.tracks[index - 1], highlightBelow: true },
-                ],
-              });
-            } else {
-              AppStore.project.setNode(originNode.id, {
-                tracks: [
-                  ...originNode.tracks.slice(0, Math.max(0, index)),
-                  { ...originNode.tracks[index], highlightAbove: true },
-                  ...originNode.tracks.slice(index + 1),
-                ],
-              });
-            }
-          }
+          addHighlightToTrack(
+            overlappingNode.id,
+            index,
+            action as PreviewAction
+          );
         }
-      });
+      } else {
+        // show preview
+        AppStore.project.dragPreview = {
+          ...(AppStore.project.dragPreview as VideoDragPreview),
+          originX: left,
+          originY: top,
+          showPreviewNode: true,
+        };
+      }
     }
   };
 
@@ -248,116 +201,79 @@ export const getSourcePanelMouseEvents = (
       let x = e.clientX;
       let y = e.clientY;
       const canvas = AppStore.canvas.ref;
-      if (!canvas) throw Error("Canvas is null");
+      if (!canvas || !AppStore.project.dragPreview)
+        throw Error("Canvas is null or no drag preview");
       const rect = canvas.getBoundingClientRect();
       AppStore.project.resetWithFork();
-      // check if mouse is inside rect
-      if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
-        throw "Mouse is not inside canvas";
-      } else {
-        let dragPreview = AppStore.project.dragPreview;
-        if (!dragPreview) throw Error("Drag preview is null");
-        let screen = AppStore.canvas.screen;
-        let scale = AppStore.canvas.scale;
-        let deltaX = (x - rect.left) / scale.x;
-        let deltaY = (y - rect.top) / scale.y;
-        let left = screen.left + deltaX;
-        let top = screen.top + deltaY;
-        let overlappingNode = AppStore.project.rootNodes.find((node) => {
-          return (
-            node.position.top < top &&
-            node.position.top + node.position.height > top &&
-            node.position.left < left &&
-            node.position.left + node.position.width > left
-          );
-        });
-        if (!overlappingNode) {
-          // add video to canvas as another editor
-          let left = dragPreview.originX;
-          let top = dragPreview.originY;
-          let width = dragPreview.width;
-          let height = dragPreview.height;
+      AppStore.canvas.shouldRender = true;
+      let { x: left, y: top } = getMousePositionOnCanvas(x, y, rect);
+      let overlappingNode = getMouseOverlappingNode(x, y, rect);
+      let previewOverlap = getPreviewOverlappingNode({
+        ...AppStore.project.dragPreview,
+        originX: left,
+        originY: top,
+      });
 
-          // check if any nodes are overlapping
-          let rectOverlap = AppStore.project.rootNodes.find((node) => {
-            return (
-              left < node.position.left + node.position.width &&
-              left + width > node.position.left &&
-              top > node.position.top + node.position.height &&
-              top + height < node.position.top
-            );
-          });
-          if (rectOverlap) throw Error("Rect overlaps with another node");
+      if (isMouseInsideCanvas(x, y, rect)) {
+        if (previewOverlap && overlappingNode) {
+          let trackId = getOverlappingTrackIdOfNode(x, y, overlappingNode.id);
+          if (trackId) {
+            let element = document.getElementById(trackId);
+            if (!element) return;
+            let action = element.getAttribute("data-action");
+            let index = element.getAttribute("data-index")
+              ? parseInt(element.getAttribute("data-index") || "")
+              : null;
+            if (!action || index === null) return;
+            let originNode = AppStore.project.getOriginNode(
+              overlappingNode.id
+            ) as VideoEditorNode;
+            if (!originNode) return;
+
+            if (action === "add-track") {
+              let { url, duration } = AppStore.project
+                .dragPreview as VideoDragPreview;
+
+              let videoClip: VideoClip = {
+                id: generateId(),
+                cacheKey: "",
+                type: "video-clip",
+                url: url,
+                start: 0,
+                end: duration,
+                clipStart: 0,
+                clipEnd: duration,
+              };
+              let track: VideoTrack = {
+                id: generateId(),
+                type: "video",
+                index: 1,
+                cacheKey: "",
+                clips: [videoClip],
+              };
+              if (index === originNode.tracks.length) {
+                AppStore.project.setNode(originNode.id, {
+                  tracks: [...originNode.tracks, track],
+                });
+              } else {
+                AppStore.project.setNode(originNode.id, {
+                  tracks: [
+                    ...originNode.tracks.slice(0, Math.max(0, index)),
+                    track,
+                    ...originNode.tracks.slice(index),
+                  ],
+                });
+              }
+            }
+          }
+        } else {
+          let { url, duration, width, height } = AppStore.project.dragPreview;
           let node = createVideoEditorNodeFromVideoClip(
             generateId(),
             { top, left, width, height },
-            { url: dragPreview.url, duration: dragPreview.duration }
+            { url: url, duration: duration }
           );
           AppStore.project.addVideoEditor(node.id, node);
-        } else {
-          let originNode = AppStore.project.getOriginNode(
-            overlappingNode?.id || ""
-          ) as VideoEditorNode;
-          if (!overlappingNode || !originNode) {
-            return;
-          }
-          let elementIds = [
-            originNode.id,
-            ...originNode.tracks.map((t) => t.id),
-          ].flatMap((id) => [id, `${id}-pre`, `${id}-post`]);
-          elementIds.forEach((id) => {
-            let element = document.getElementById(id);
-            if (!element) return;
-            let rect = element.getBoundingClientRect();
-            // check if mouse is inside getBoundingClientRect
-            if (
-              x > rect.left &&
-              x < rect.right &&
-              y > rect.top &&
-              y < rect.bottom
-            ) {
-              let action = element.getAttribute("data-action");
-              let index = element.getAttribute("data-index")
-                ? parseInt(element.getAttribute("data-index") || "")
-                : null;
-              if (!action || index === null) return;
-              if (action === "add-track") {
-                let { url, duration } = AppStore.project
-                  .dragPreview as VideoDragPreview;
-
-                let videoClip: VideoClip = {
-                  id: generateId(),
-                  cacheKey: "",
-                  type: "video-clip",
-                  url: url,
-                  start: 0,
-                  end: duration,
-                  clipStart: 0,
-                  clipEnd: duration,
-                };
-                let track: VideoTrack = {
-                  id: generateId(),
-                  type: "video",
-                  index: 1,
-                  cacheKey: "",
-                  clips: [videoClip],
-                };
-                if (index === originNode.tracks.length) {
-                  AppStore.project.setNode(originNode.id, {
-                    tracks: [...originNode.tracks, track],
-                  });
-                } else {
-                  AppStore.project.setNode(originNode.id, {
-                    tracks: [
-                      ...originNode.tracks.slice(0, Math.max(0, index)),
-                      track,
-                      ...originNode.tracks.slice(index),
-                    ],
-                  });
-                }
-              }
-            }
-          });
         }
       }
     } catch (e) {

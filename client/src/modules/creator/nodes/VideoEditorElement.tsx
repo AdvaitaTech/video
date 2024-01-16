@@ -225,8 +225,6 @@ const VideoEditorElement = ({
     <Position screen={screen} {...node.position}>
       <div
         ref={ref}
-        id={node.id}
-        data-id={node.id}
         className="flex flex-col border-2 rounded-lg w-full h-full select-none z-10 bg-slate-100"
       >
         {rows.map((row) => {
