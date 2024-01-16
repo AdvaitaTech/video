@@ -39,7 +39,7 @@ export const SourcePanelText = () => {
   return (
     <div className="flex flex-wrap flex-row gap-5 pt-5">
       {styles.map((style, index) => (
-        <div>
+        <div key={index}>
           <div
             className="text-md text-primary-900 pl-2 pr-5 border rounded border-slate-600 ml-[-10px]"
             style={{

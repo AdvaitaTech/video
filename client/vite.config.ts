@@ -13,6 +13,7 @@ export default defineConfig({
   },
   test: {
     globals: true,
+    includeSource: ["src/**/*.{js,jsx,ts,tsx}"],
     setupFiles: ["./test/setup.ts"],
     environment: "jsdom",
   },
