@@ -55,10 +55,10 @@ export interface GenericTrack {
 }
 
 export interface VideoTrack extends GenericTrack {
-  type: "video" | "image";
+  type: "video";
   id: string;
   cacheKey: string;
-  clips: VideoClip[];
+  clips: (VideoClip | TextClip)[];
 }
 
 export interface GenericClip {
@@ -76,6 +76,13 @@ export interface VideoClip extends GenericClip {
   url: string;
   clipStart: number;
   clipEnd: number;
+}
+
+export interface TextClip extends GenericClip {
+  type: "text-clip";
+  size: number;
+  color: string;
+  text: string;
 }
 
 export interface VideoEditorNode extends GenericNode {
@@ -110,4 +117,10 @@ export type DragPreview = {
 export type VideoDragPreview = {
   type: "video";
   url: string;
+} & DragPreview;
+
+export type TextDragPreview = {
+  type: "text";
+  size: number;
+  text: string;
 } & DragPreview;

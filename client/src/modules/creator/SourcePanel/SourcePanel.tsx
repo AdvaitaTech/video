@@ -1,10 +1,13 @@
 import { memo, useRef } from "react";
-import { getSourcePanelMouseEvents } from "./SourcePanelEvents";
+import {
+  getSourcePanelTextEvents,
+  getSourcePanelVideoEvents,
+} from "./SourcePanelEvents";
 
 const SourcePanelVideo = ({ name, url }: { name: string; url: string }) => {
   let videoRef = useRef<HTMLVideoElement>(null);
   return (
-    <div {...getSourcePanelMouseEvents(videoRef)}>
+    <div {...getSourcePanelVideoEvents(videoRef)}>
       <video src={url} ref={videoRef}></video>
       <div className="text-md text-primary-900">{name}</div>
     </div>
@@ -39,15 +42,20 @@ export const SourcePanelText = () => {
   return (
     <div className="flex flex-wrap flex-row gap-5 pt-5">
       {styles.map((style, index) => (
-        <div key={index}>
-          <div
-            className="text-md text-primary-900 pl-2 pr-5 border rounded border-slate-600 ml-[-10px]"
-            style={{
-              fontSize: style.size,
-            }}
-          >
-            {style.text}
-          </div>
+        <div
+          key={index}
+          className="text-md text-primary-900 pl-2 pr-5 border rounded border-slate-600 ml-[-10px] cursor-default select-none"
+          style={{
+            fontSize: style.size,
+          }}
+          {...getSourcePanelTextEvents({
+            text: style.text,
+            size: style.size,
+            height: style.height,
+            width: style.width,
+          })}
+        >
+          {style.text}
         </div>
       ))}
     </div>

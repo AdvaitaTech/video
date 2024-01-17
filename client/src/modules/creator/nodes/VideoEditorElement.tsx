@@ -11,7 +11,7 @@ import { showTime } from "../utils/VideoEditorUtils";
 
 const getVideoElementRows = (
   tracks: {
-    clips: { start: number; end: number; url: string }[];
+    clips: { start: number; end: number; url?: string; text?: string }[];
     id?: string;
     highlightAbove?: boolean;
     highlightBelow?: boolean;
@@ -135,27 +135,51 @@ const getVideoElementRows = (
                     className="h-[30px] bg-secondary-100 w-full relative rounded-sm"
                   >
                     {track.clips.map((clip, index) => {
-                      return (
-                        <div
-                          className="absolute bg-secondary-500 border-2 border-secondary-500 rounded-lg h-full"
-                          key={index}
-                          style={{
-                            left: `${clip.start * PIXELS_PER_SECOND}px`,
-                            right: `${
-                              (duration - clip.end) * PIXELS_PER_SECOND
-                            }px`,
-                          }}
-                        >
+                      if (clip.url) {
+                        return (
                           <div
+                            className="absolute bg-secondary-500 border-2 border-secondary-500 rounded-lg h-full"
                             key={index}
-                            className="absolute right-[5px] top-[3px] bottom-[3px] w-[3px] bg-secondary-200 rounded cursor-col-resize"
-                          ></div>
-                          <div className="absolute left-[5px] top-[3px] bottom-[3px] w-[3px] bg-secondary-200 rounded cursor-col-resize"></div>
-                          <div className="ml-[15px] text-white h-full flex items-center">
-                            Video
+                            style={{
+                              left: `${clip.start * PIXELS_PER_SECOND}px`,
+                              right: `${
+                                (duration - clip.end) * PIXELS_PER_SECOND
+                              }px`,
+                            }}
+                          >
+                            <div
+                              key={index}
+                              className="absolute right-[5px] top-[3px] bottom-[3px] w-[3px] bg-secondary-200 rounded cursor-col-resize"
+                            ></div>
+                            <div className="absolute left-[5px] top-[3px] bottom-[3px] w-[3px] bg-secondary-200 rounded cursor-col-resize"></div>
+                            <div className="ml-[15px] text-white h-full flex items-center">
+                              Video
+                            </div>
                           </div>
-                        </div>
-                      );
+                        );
+                      } else {
+                        return (
+                          <div
+                            className="absolute bg-tertiary-400 border-2 border-tertiary-300 rounded-lg h-full"
+                            key={index}
+                            style={{
+                              left: `${clip.start * PIXELS_PER_SECOND}px`,
+                              right: `${
+                                (duration - clip.end) * PIXELS_PER_SECOND
+                              }px`,
+                            }}
+                          >
+                            <div
+                              key={index}
+                              className="absolute right-[5px] top-[3px] bottom-[3px] w-[3px] bg-tertiary-200 rounded cursor-col-resize"
+                            ></div>
+                            <div className="absolute left-[5px] top-[3px] bottom-[3px] w-[3px] bg-tertiary-200 rounded cursor-col-resize"></div>
+                            <div className="ml-[15px] text-white h-full flex items-center">
+                              Text
+                            </div>
+                          </div>
+                        );
+                      }
                     })}
                   </div>
                   {index === tracks.length - 1 ? (

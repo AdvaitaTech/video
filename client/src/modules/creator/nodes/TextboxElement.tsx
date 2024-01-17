@@ -12,7 +12,7 @@ const TextElement = ({
 }) => {
   return (
     <div className="h-full w-full">
-      <div className="text-md text-white">{node.text}</div>
+      <div className="text-md text-black">{node.text}</div>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { ProjectRegistry, ProjectRoot } from "./ProjectRegistry";
 import {
   Node,
   RootNode,
+  TextDragPreview,
   VideoDragPreview,
   VideoEditorNode,
 } from "./ProjectTypes";
@@ -13,7 +14,7 @@ import { Board, User } from "modules/core/NetworkTypes";
 export default class ProjectStore {
   public board: Board | null = null;
   private author: User | null = null;
-  private _drag: VideoDragPreview | null = null;
+  private _drag: VideoDragPreview | TextDragPreview | null = null;
   private _registry = new ProjectRegistry();
 
   public get registry() {
@@ -133,7 +134,7 @@ export default class ProjectStore {
     return this._drag;
   }
 
-  public set dragPreview(preview: VideoDragPreview | null) {
+  public set dragPreview(preview: VideoDragPreview | TextDragPreview | null) {
     this._drag = preview;
   }
 }

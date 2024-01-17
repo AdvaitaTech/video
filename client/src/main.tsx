@@ -4,7 +4,7 @@ import "./index.css";
 import Creator from "modules/creator/Creator";
 
 createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <Creator />
-  </React.StrictMode>
+  // <React.StrictMode>
+  <Creator />
+  // </React.StrictMode>
 );

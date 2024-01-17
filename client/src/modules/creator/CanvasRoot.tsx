@@ -68,20 +68,6 @@ export const CanvasRoot = () => {
   useEffect(() => {
     if (width === 0 || height === 0) return;
     AppStore.canvas.initialize(width, height);
-    let url =
-      "https://www.shutterstock.com/shutterstock/videos/1080319025/preview/stock-footage-abstract-tech-earth-globalization-in-d-motion-graphic-concept-transmit-ai-networking-on-fiber.mp4";
-    let { width: w, height: h } = calculateVideoElementDimensions([
-      { clips: [{ start: 0, end: 20, url }] },
-    ]);
-    let node = createVideoEditorNodeFromVideoClip(
-      generateId(),
-      { top: 1200, left: 900, width: w, height: h },
-      {
-        url: url,
-        duration: 20,
-      }
-    );
-    AppStore.project.addVideoEditor(generateId(), node);
   }, [width, height]);
   const frame = useRenderLoop();
 
