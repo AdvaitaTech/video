@@ -18,6 +18,7 @@ import {
   getMousePositionOnCanvas,
   getPreviewOverlappingNode,
   addHighlightToTrack,
+  addTrackToNode,
 } from "./SourcePanelEventHelpers";
 
 export const getSourcePanelMouseEvents = (
@@ -137,19 +138,7 @@ export const getSourcePanelMouseEvents = (
                 cacheKey: "",
                 clips: [videoClip],
               };
-              if (index === originNode.tracks.length) {
-                AppStore.project.setNode(originNode.id, {
-                  tracks: [...originNode.tracks, track],
-                });
-              } else {
-                AppStore.project.setNode(originNode.id, {
-                  tracks: [
-                    ...originNode.tracks.slice(0, Math.max(0, index)),
-                    track,
-                    ...originNode.tracks.slice(index),
-                  ],
-                });
-              }
+              addTrackToNode(originNode.id, index, action, track);
             }
           }
         } else {

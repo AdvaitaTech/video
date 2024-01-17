@@ -1,10 +1,14 @@
 import AppStore from "modules/state/AppStore";
 import {
   DragPreview,
+  VideoClip,
   VideoEditorNode,
+  VideoTrack,
 } from "modules/state/project/ProjectTypes";
+import { calculateVideoElementDimensions } from "../nodes/VideoEditorElement";
+import { generateId } from "modules/core/project-utils";
 
-type PreviewAction = "add-track" | "add-clip";
+export type PreviewAction = "add-track" | "add-clip";
 
 export const isMouseInsideCanvas = (
   mouseX: number,
@@ -127,6 +131,34 @@ export const addHighlightToTrack = (
   }
 };
 
+export const addTrackToNode = (
+  nodeId: string,
+  trackIndex: number,
+  previewAction: PreviewAction,
+  track: VideoTrack
+) => {
+  let originNode = AppStore.project.getOriginNode(
+    nodeId
+  ) as VideoEditorNode | null;
+  if (!originNode) return;
+
+  if (previewAction === "add-track") {
+    if (trackIndex === originNode.tracks.length) {
+      AppStore.project.setNode(originNode.id, {
+        tracks: [...originNode.tracks, track],
+      });
+    } else {
+      AppStore.project.setNode(originNode.id, {
+        tracks: [
+          ...originNode.tracks.slice(0, Math.max(0, trackIndex)),
+          track,
+          ...originNode.tracks.slice(trackIndex),
+        ],
+      });
+    }
+  }
+};
+
 if (import.meta.vitest) {
   const { describe, it, expect, beforeEach, beforeAll } = import.meta.vitest;
 
@@ -169,6 +201,30 @@ if (import.meta.vitest) {
       author: "",
       tracks,
     };
+  };
+
+  const generateFakeTrack = () => {
+    let url =
+      "https://www.shutterstock.com/shutterstock/videos/1080319025/preview/stock-footage-abstract-tech-earth-globalization-in-d-motion-graphic-concept-transmit-ai-networking-on-fiber.mp4";
+    let duration = 20;
+    let videoClip: VideoClip = {
+      id: generateId(),
+      cacheKey: "",
+      type: "video-clip",
+      url: url,
+      start: 0,
+      end: duration,
+      clipStart: 0,
+      clipEnd: duration,
+    };
+    let track: VideoTrack = {
+      id: generateId(),
+      type: "video",
+      index: 1,
+      cacheKey: "",
+      clips: [videoClip],
+    };
+    return [track];
   };
 
   describe("getSourcePanelMouseEvents", () => {
@@ -258,6 +314,23 @@ if (import.meta.vitest) {
         addHighlightToTrack(node!.id, 3, "add-track");
         check = AppStore.project.getNode(node!.id) as VideoEditorNode;
         expect(check.tracks[2].highlightBelow).toBe(true);
+      });
+    });
+
+    describe("addTrackToNode", () => {
+      let node: VideoEditorNode | null;
+      beforeEach(() => {
+        node = generateFakeVideoNode(1200, 800, 3);
+        AppStore.project.addVideoEditor(node.id, node);
+      });
+      it("should set highlight above for all indices", () => {
+        [0, 2, 4, 6].forEach((index) => {
+          AppStore.project.fork();
+          let track = generateFakeTrack()[0];
+          addTrackToNode(node!.id, index, "add-track", track);
+          let n = AppStore.project.getNode(node!.id) as VideoEditorNode;
+          expect(n.tracks[index].id).toBe(track.id);
+        });
       });
     });
   });
