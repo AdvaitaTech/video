@@ -124,7 +124,7 @@ const getVideoElementRows = (
                     id={`${track.id || ""}-pre`}
                     data-action="add-track"
                     data-index={index}
-                    className={clsx("h-[3px] my-[1px] rounded-lg", {
+                    className={clsx("h-[5px] rounded-lg", {
                       "bg-secondary-400": track.highlightAbove,
                     })}
                   ></div>
@@ -138,7 +138,7 @@ const getVideoElementRows = (
                       if (clip.url) {
                         return (
                           <div
-                            className="absolute bg-secondary-500 border-2 border-secondary-500 rounded-lg h-full"
+                            className="absolute bg-secondary-500 border-2 border-secondary-300 rounded-lg h-full"
                             key={index}
                             style={{
                               left: `${clip.start * PIXELS_PER_SECOND}px`,

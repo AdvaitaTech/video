@@ -17,6 +17,7 @@ export const Creator = () => {
   }, [canvas]);
 
   useEffect(() => {
+    if (AppStore.project.rootNodes.length > 0) return;
     let url =
       "https://www.shutterstock.com/shutterstock/videos/1080319025/preview/stock-footage-abstract-tech-earth-globalization-in-d-motion-graphic-concept-transmit-ai-networking-on-fiber.mp4";
     let { width: w, height: h } = calculateVideoElementDimensions([

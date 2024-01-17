@@ -64,7 +64,7 @@ export const getSourcePanelVideoEvents = (
             action as PreviewAction
           );
         }
-      } else {
+      } else if (!previewOverlap) {
         // show preview
         AppStore.project.dragPreview = {
           ...(AppStore.project.dragPreview as VideoDragPreview),
@@ -138,8 +138,9 @@ export const getSourcePanelVideoEvents = (
               addTrackToNode(originNode.id, index, action, track);
             }
           }
-        } else {
-          let { url, duration, width, height } = AppStore.project.dragPreview;
+        } else if (!previewOverlap) {
+          let { url, duration, width, height } = AppStore.project
+            .dragPreview as VideoDragPreview;
           let node = createVideoEditorNodeFromVideoClip(
             generateId(),
             { top, left, width, height },
@@ -228,7 +229,7 @@ export const getSourcePanelTextEvents = (textElement: {
             action as PreviewAction
           );
         }
-      } else {
+      } else if (!previewOverlap) {
         // show preview
         AppStore.project.dragPreview = {
           ...(AppStore.project.dragPreview as TextDragPreview),
@@ -302,7 +303,7 @@ export const getSourcePanelTextEvents = (textElement: {
               addTrackToNode(originNode.id, index, action, track);
             }
           }
-        } else {
+        } else if (!previewOverlap) {
           let { width, height } = AppStore.project.dragPreview;
           AppStore.project.addTextbox(generateId(), {
             position: { top, left, width, height },
