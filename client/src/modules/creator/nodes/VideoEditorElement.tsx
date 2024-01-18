@@ -13,6 +13,7 @@ import FastForwardIcon from "@mui/icons-material/FastForwardRounded";
 import clsx from "clsx";
 import { showTime } from "../utils/VideoEditorUtils";
 import AppStore from "modules/state/AppStore";
+import Monitor from "./Monitor/Monitor";
 
 type VideoEditorRow = {
   name: string;
@@ -49,11 +50,20 @@ const getVideoElementRows = (
       name: "previewer",
       height: 300,
       width: width,
-      component: () => {
+      component: ({ node, monitorTime, monitorState }) => {
         console.log("rendering video editor element");
+        const containerRef = useRef<HTMLDivElement>(null);
         return (
-          <div className="w-full h-full flex items-center py-[5px]">
-            <video src={clip?.url} className="w-full h-full"></video>
+          <div className="w-full h-full flex justify-center items-center  py-[5px]">
+            <div
+              ref={containerRef}
+              style={{
+                height: "300px",
+                width: "533px",
+              }}
+            >
+              <Monitor id={node.id} containerRef={containerRef} />
+            </div>
           </div>
         );
       },
