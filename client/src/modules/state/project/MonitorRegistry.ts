@@ -18,6 +18,7 @@ export class MonitorRegistry {
   }
 
   private onTick(id: string) {
+    AppStore.canvas.shouldRender = true;
     let node = AppStore.project.getNode(id) as VideoEditorNode | null;
     let monitor = this.monitors.get(id);
     if (!node || !monitor || !monitor._lastFrameTime) return;
@@ -30,7 +31,6 @@ export class MonitorRegistry {
     if (monitor.time + delta < max) {
       monitor._lastFrameTime = performance.now();
       monitor.time += delta;
-      console.log("playing", monitor.time);
       monitor.timerId = requestAnimationFrame(this.onTick.bind(this, id));
     } else {
       monitor.state = "paused";
@@ -47,5 +47,17 @@ export class MonitorRegistry {
 
   seekMonitor(id: string, time: number) {}
 
-  pauseMonitor(id: string) {}
+  pauseMonitor(id: string) {
+    let monitor = this.monitors.get(id);
+    if (!monitor) return;
+    monitor.state = "paused";
+    monitor.timerId && cancelAnimationFrame(monitor.timerId);
+    monitor.timerId = undefined;
+  }
+
+  getMonitorState(id: string): { state: MonitorState; time: number } {
+    let monitor = this.monitors.get(id);
+    if (!monitor) return { state: "paused", time: 0 };
+    return { state: monitor.state, time: monitor.time };
+  }
 }

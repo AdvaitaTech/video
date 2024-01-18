@@ -86,8 +86,11 @@ export default class ProjectStore {
     AppStore.canvas.shouldRender = true;
   }
 
+  public getMonitorState(id: string) {
+    return this.monitors.getMonitorState(id);
+  }
+
   public playMonitor(id: string) {
-    console.log("playing");
     this.monitors.playMonitor(id);
   }
 

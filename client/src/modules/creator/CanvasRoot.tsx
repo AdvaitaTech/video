@@ -6,7 +6,10 @@ import ProjectNode from "./nodes/ProjectNode";
 import { generateId } from "modules/core/project-utils";
 import { createVideoEditorNodeFromVideoClip } from "./utils/VideoEditorUtils";
 import PreviewNode from "./nodes/PreviewNode";
-import { calculateVideoElementDimensions } from "./nodes/VideoEditorElement";
+import VideoEditorElement, {
+  calculateVideoElementDimensions,
+} from "./nodes/VideoEditorElement";
+import TextboxElement from "./nodes/TextboxElement";
 
 const CANVAS_TOP = 0;
 const CANVAS_LEFT = 350;
@@ -28,15 +31,30 @@ const InfiniteCanvas = ({ frame }: { frame: number }) => {
         transformOrigin: "top left",
       }}
     >
-      {nodes.map((node, index) => (
-        <ProjectNode
-          screen={screen}
-          key={index}
-          node={node}
-          cacheKey={node.cacheKey}
-          selected={false}
-        ></ProjectNode>
-      ))}
+      {nodes.map((node, index) => {
+        if (node.type === "textbox") {
+          return (
+            <TextboxElement
+              key={node.id}
+              screen={screen}
+              node={node}
+              cacheKey={node.cacheKey}
+            />
+          );
+        } else if (node.type === "video-editor") {
+          let monitor = AppStore.project.getMonitorState(node.id);
+          return (
+            <VideoEditorElement
+              key={node.id}
+              screen={screen}
+              node={node}
+              cacheKey={node.cacheKey}
+              monitorState={monitor.state}
+              monitorTime={monitor.time}
+            />
+          );
+        }
+      })}
       <PreviewNode screen={screen} dragPreview={dragPreview} />
     </div>
   );

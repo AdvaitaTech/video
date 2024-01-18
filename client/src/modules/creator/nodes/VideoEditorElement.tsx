@@ -1,14 +1,29 @@
 import { ScreenPosition } from "modules/core/Position";
-import { VideoEditorNode } from "modules/state/project/ProjectTypes";
+import {
+  MonitorState,
+  VideoEditorNode,
+} from "modules/state/project/ProjectTypes";
 import { memo, useRef } from "react";
 import { Position } from "modules/core/Position";
 import { PIXELS_PER_SECOND } from "modules/core/constants";
+import PauseIcon from "@mui/icons-material/PauseRounded";
 import PlayIcon from "@mui/icons-material/PlayArrowRounded";
 import RewindIcon from "@mui/icons-material/FastRewindRounded";
 import FastForwardIcon from "@mui/icons-material/FastForwardRounded";
 import clsx from "clsx";
 import { showTime } from "../utils/VideoEditorUtils";
 import AppStore from "modules/state/AppStore";
+
+type VideoEditorRow = {
+  name: string;
+  width: number;
+  height: number;
+  component: (props: {
+    node: VideoEditorNode;
+    monitorTime: number;
+    monitorState: MonitorState;
+  }) => JSX.Element;
+};
 
 const getVideoElementRows = (
   tracks: {
@@ -29,7 +44,7 @@ const getVideoElementRows = (
   let paddingY = 0;
   let width = duration * PIXELS_PER_SECOND + paddingX;
   let clip = tracks[0].clips[0];
-  let rows = [
+  let rows: VideoEditorRow[] = [
     {
       name: "previewer",
       height: 300,
@@ -47,19 +62,28 @@ const getVideoElementRows = (
       name: "controls",
       width: width,
       height: 50,
-      component: () => {
+      component: ({ node, monitorState, monitorTime }) => {
         return (
           <div className="w-full h-full py-[5px]">
             <div className="flex items-center justify-center">
               <button className="mr-2">
                 <RewindIcon style={{ height: "30px", width: "30px" }} />
               </button>
-              <button
-                className="mr-2"
-                onClick={() => AppStore.project.playMonitor(id)}
-              >
-                <PlayIcon style={{ height: "40px", width: "40px" }} />
-              </button>
+              {monitorState === "playing" ? (
+                <button
+                  className="mr-2"
+                  onClick={() => AppStore.project.pauseMonitor(node.id)}
+                >
+                  <PauseIcon style={{ height: "40px", width: "40px" }} />
+                </button>
+              ) : (
+                <button
+                  className="mr-2"
+                  onClick={() => AppStore.project.playMonitor(node.id)}
+                >
+                  <PlayIcon style={{ height: "40px", width: "40px" }} />
+                </button>
+              )}
               <button className="mr-2">
                 <FastForwardIcon style={{ height: "30px", width: "30px" }} />
               </button>
@@ -234,11 +258,15 @@ const VideoEditorElement = ({
   selected,
   cacheKey,
   screen,
+  monitorTime,
+  monitorState,
 }: {
   node: VideoEditorNode;
   screen: ScreenPosition;
   selected?: boolean;
   cacheKey: string;
+  monitorState: MonitorState;
+  monitorTime: number;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   let rows = getVideoElementRows(
@@ -250,6 +278,7 @@ const VideoEditorElement = ({
     })),
     node.id
   );
+  console.log("state is", monitorState, monitorTime);
   return (
     <Position screen={screen} {...node.position}>
       <div
@@ -266,7 +295,7 @@ const VideoEditorElement = ({
                 overflow: "hidden",
               }}
             >
-              {row.component()}
+              {row.component({ node, monitorState, monitorTime })}
             </div>
           );
         })}
