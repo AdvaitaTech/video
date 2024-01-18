@@ -8,6 +8,7 @@ import RewindIcon from "@mui/icons-material/FastRewindRounded";
 import FastForwardIcon from "@mui/icons-material/FastForwardRounded";
 import clsx from "clsx";
 import { showTime } from "../utils/VideoEditorUtils";
+import AppStore from "modules/state/AppStore";
 
 const getVideoElementRows = (
   tracks: {
@@ -34,6 +35,7 @@ const getVideoElementRows = (
       height: 300,
       width: width,
       component: () => {
+        console.log("rendering video editor element");
         return (
           <div className="w-full h-full flex items-center py-[5px]">
             <video src={clip?.url} className="w-full h-full"></video>
@@ -52,7 +54,10 @@ const getVideoElementRows = (
               <button className="mr-2">
                 <RewindIcon style={{ height: "30px", width: "30px" }} />
               </button>
-              <button className="mr-2">
+              <button
+                className="mr-2"
+                onClick={() => AppStore.project.playMonitor(id)}
+              >
                 <PlayIcon style={{ height: "40px", width: "40px" }} />
               </button>
               <button className="mr-2">

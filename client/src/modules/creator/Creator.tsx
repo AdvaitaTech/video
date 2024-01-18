@@ -31,7 +31,7 @@ export const Creator = () => {
         duration: 20,
       }
     );
-    AppStore.project.addVideoEditor(generateId(), node);
+    AppStore.project.addVideoEditor(node.id, node);
   }, []);
 
   return (

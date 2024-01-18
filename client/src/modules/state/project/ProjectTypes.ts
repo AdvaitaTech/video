@@ -124,3 +124,5 @@ export type TextDragPreview = {
   size: number;
   text: string;
 } & DragPreview;
+
+export type MonitorState = "playing" | "paused";

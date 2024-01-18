@@ -38,6 +38,7 @@ export const Position = ({
       }
     )
   ) {
+    console.log("in bounds");
     return (
       <div
         className="absolute inline-block z-10"

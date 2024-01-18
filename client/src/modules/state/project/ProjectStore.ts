@@ -10,15 +10,21 @@ import {
   VideoEditorNode,
 } from "./ProjectTypes";
 import { Board, User } from "modules/core/NetworkTypes";
+import { MonitorRegistry } from "./MonitorRegistry";
 
 export default class ProjectStore {
   public board: Board | null = null;
   private author: User | null = null;
   private _drag: VideoDragPreview | TextDragPreview | null = null;
   private _registry = new ProjectRegistry();
+  private _monitors = new MonitorRegistry();
 
   public get registry() {
     return this._registry;
+  }
+
+  private get monitors() {
+    return this._monitors;
   }
 
   public getNode(id: string) {
@@ -36,6 +42,7 @@ export default class ProjectStore {
     this.registry.addNode({
       ...node,
     });
+    this.monitors.addMonitor(id, 0);
     AppStore.canvas.shouldRender = true;
   }
 
@@ -77,6 +84,19 @@ export default class ProjectStore {
   public setNode(id: string, node: Partial<Node>) {
     this.registry.patchNode(id, node);
     AppStore.canvas.shouldRender = true;
+  }
+
+  public playMonitor(id: string) {
+    console.log("playing");
+    this.monitors.playMonitor(id);
+  }
+
+  public pauseMonitor(id: string) {
+    this.monitors.pauseMonitor(id);
+  }
+
+  public seekMonitor(id: string, time: number) {
+    this.monitors.seekMonitor(id, time);
   }
 
   public loadProject(nodes: Node[]) {
