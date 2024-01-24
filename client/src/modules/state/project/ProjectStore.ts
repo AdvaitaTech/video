@@ -31,6 +31,14 @@ export default class ProjectStore {
     return this.registry.getNode(id);
   }
 
+  public getTextboxNode(id: string) {
+    return this.registry.getTextboxNode(id);
+  }
+
+  public getVideoEditorNode(id: string) {
+    return this.registry.getVideoEditorNode(id);
+  }
+
   public moveBox(id: string, position: Partial<CanvasPosition>) {
     const node = this.registry.getNode(id);
     if (!node || !("position" in node)) return;

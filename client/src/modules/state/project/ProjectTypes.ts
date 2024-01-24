@@ -85,6 +85,8 @@ export interface TextClip extends GenericClip {
   text: string;
 }
 
+export type TrackClip = VideoClip | TextClip;
+
 export interface VideoEditorNode extends GenericNode {
   type: "video-editor";
   position: CanvasPosition;

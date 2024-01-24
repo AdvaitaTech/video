@@ -51,7 +51,6 @@ const getVideoElementRows = (
       height: 300,
       width: width,
       component: ({ node, monitorTime, monitorState }) => {
-        console.log("rendering video editor element");
         const containerRef = useRef<HTMLDivElement>(null);
         return (
           <div className="w-full h-full flex justify-center items-center  py-[5px]">
@@ -288,7 +287,6 @@ const VideoEditorElement = ({
     })),
     node.id
   );
-  console.log("state is", monitorState, monitorTime);
   return (
     <Position screen={screen} {...node.position}>
       <div

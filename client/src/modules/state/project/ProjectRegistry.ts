@@ -82,6 +82,14 @@ export class ProjectRegistry {
     return this.textboxes?.get(id) || this.videoEditors?.get(id);
   }
 
+  public getTextboxNode(id: string): TextboxNode | undefined {
+    return this.textboxes?.get(id);
+  }
+
+  public getVideoEditorNode(id: string): VideoEditorNode | undefined {
+    return this.videoEditors?.get(id);
+  }
+
   public getOriginNode(id: string): Node | undefined {
     if (this.origin)
       return this.origin.textboxes[id] || this.origin.vEditors[id];
