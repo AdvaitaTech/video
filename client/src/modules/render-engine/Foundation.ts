@@ -1,5 +1,30 @@
+import { Container, DisplayObject } from "pixi.js";
+
 export type BuildContext = {};
 export type WidgetCreator = (context: BuildContext) => Widget[];
+class RenderCanvas {
+  constructor(public container: Container) {}
+
+  getContainer() {
+    return this.container;
+  }
+
+  addChild(child: DisplayObject) {
+    this.container.addChild(child);
+  }
+
+  removeChild(child: DisplayObject | Container) {
+    this.container.removeChild(child);
+  }
+
+  addContainer(child: Container) {
+    this.container.addChild(child);
+  }
+
+  clear() {
+    this.container.removeChildren();
+  }
+}
 
 export abstract class Widget {
   key: string;
@@ -15,40 +40,46 @@ export abstract class WidgetElement {
     this.widget = widget;
   }
 
-  abstract render(context: BuildContext): void;
+  abstract render(canvas: RenderCanvas, context: BuildContext): void;
   abstract mount(parent: WidgetElement, context: BuildContext): void;
-  abstract unmount(): void;
+  abstract unmount(canvas: RenderCanvas): void;
 }
 
 export abstract class RenderObject {
-  abstract paint(context: BuildContext): void;
-  abstract destroy(): void;
+  abstract paint(canvas: RenderCanvas, context: BuildContext): void;
+  abstract destroy(canvas: RenderCanvas): void;
 }
 
 // A wrapper that optimizes the amount of paint calls
 export abstract class RenderLeaf extends RenderObject {
   needsPaint = true;
-  abstract paintLeaf(context: BuildContext): void;
-  abstract destroyLeaf(): void;
+  canvas: RenderCanvas | null = null;
+  abstract paintLeaf(canvas: RenderCanvas, context: BuildContext): void;
+  abstract destroyLeaf(canvas: RenderCanvas): void;
 
   protected markNeedsPaint() {
     this.needsPaint = true;
   }
 
-  paint(context: BuildContext) {
+  paint(canvas: RenderCanvas, context: BuildContext) {
+    // if canvas is changed, we must atleast be aware of it
+    this.canvas = canvas;
     if (this.needsPaint) {
-      this.paintLeaf(context);
+      this.paintLeaf(canvas, context);
     }
   }
 
-  destroy() {
-    this.destroyLeaf();
+  destroy(canvas: RenderCanvas) {
+    this.destroyLeaf(canvas);
   }
 }
 
 export abstract class LeafWidget extends Widget {
   constructor(key: string) {
     super(key);
+  }
+  createElement(context: BuildContext): WidgetElement {
+    return new LeafWidgetElement(this.key, this);
   }
   abstract createRenderObject(context: BuildContext): RenderObject;
   abstract updateRenderObject(
@@ -70,17 +101,21 @@ export class LeafWidgetElement extends WidgetElement {
     this.renderObject = renderObject;
   }
 
-  render(context: BuildContext) {
+  render(canvas: RenderCanvas, context: BuildContext) {
     if (this.renderObject) {
       this.widget.updateRenderObject(this.renderObject, context);
     } else {
       this.renderObject = this.widget.createRenderObject(context);
     }
-    this.renderObject.paint(context);
+    this.renderObject.paint(canvas, context);
   }
 
-  unmount() {
-    this.renderObject?.destroy();
+  unmount(canvas: RenderCanvas) {
+    if (this.renderObject && canvas) {
+      this.renderObject?.destroy(canvas!);
+    } else if (this.renderObject && !canvas) {
+      throw new Error("RenderObject exists but canvas does not");
+    }
     this.renderObject = null;
   }
 }
@@ -96,9 +131,12 @@ export abstract class MultiChildWidget extends Widget {
 class MultiChildElement extends WidgetElement {
   _children: Map<string, WidgetElement> = new Map();
   widget: MultiChildWidget;
+  mounted = false;
+  container: RenderCanvas;
   constructor(key: string, widget: MultiChildWidget) {
     super(key, widget);
     this.widget = widget;
+    this.container = new RenderCanvas(new Container());
   }
 
   mount(parent: WidgetElement, context: BuildContext) {
@@ -116,21 +154,25 @@ class MultiChildElement extends WidgetElement {
     });
     for (let [key, el] of this._children) {
       if (!allowedKeys.has(key)) {
-        el.unmount();
+        el.unmount(this.container);
         this._children.delete(key);
       }
     }
   }
 
-  render(context: BuildContext) {
+  render(canvas: RenderCanvas, context: BuildContext) {
+    if (!this.mounted) {
+      canvas.addChild(this.container.getContainer());
+      this.mounted = true;
+    }
     for (let [_, el] of this._children) {
-      el.render(context);
+      el.render(canvas, context);
     }
   }
 
-  unmount() {
+  unmount(canvas: RenderCanvas) {
     for (let [key, el] of this._children) {
-      el.unmount();
+      el.unmount(canvas);
       this._children.delete(key);
     }
   }
@@ -144,14 +186,23 @@ class RootWidget extends Widget {
 
 class RootElement extends WidgetElement {
   _children: Map<string, WidgetElement> = new Map();
+  canvas: RenderCanvas | null = null;
+  mounted = false;
+  container: RenderCanvas;
   constructor(key: string, widget: RootWidget) {
     super(key, widget);
+    this.container = new RenderCanvas(new Container());
   }
 
-  renderWidgets(context: BuildContext, creator: WidgetCreator) {
+  renderWidgets(
+    canvas: RenderCanvas,
+    context: BuildContext,
+    creator: WidgetCreator
+  ) {
     // this sets up the render tree and the widget tree
+    this.canvas = canvas;
     this.mount(context, creator);
-    this.render(context);
+    this.render(canvas, context);
   }
 
   mount(context: BuildContext, creator: WidgetCreator) {
@@ -169,17 +220,27 @@ class RootElement extends WidgetElement {
     });
     for (let [key, el] of this._children) {
       if (!allowedKeys.has(key)) {
-        el.unmount();
+        el.unmount(this.container);
         this._children.delete(key);
       }
     }
   }
 
-  render(context: BuildContext) {
+  render(canvas: RenderCanvas, context: BuildContext) {
+    if (!this.mounted) {
+      canvas.addChild(this.container.getContainer());
+      this.mounted = true;
+    }
     for (let [key, el] of this._children) {
-      el.render(context);
+      el.render(this.container, context);
     }
   }
 
-  unmount() {}
+  unmount(canvas: RenderCanvas) {
+    for (let [key, el] of this._children) {
+      el.unmount(this.container);
+      this._children.delete(key);
+    }
+    canvas.removeChild(this.container.getContainer());
+  }
 }
