@@ -106,6 +106,7 @@ export class VideoRenderObject extends RenderLeaf {
   }
 
   destroyLeaf(canvas: RenderCanvas) {
+    this.videoElement?.remove();
     if (this.videoSprite) canvas.removeChild(this.videoSprite);
     this.videoSprite?.destroy();
   }

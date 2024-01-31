@@ -6,6 +6,7 @@ import { renderVideo } from "./RenderVideo";
 import { AssetManager } from "./AssetManager";
 import { RenderCanvas, RootWidget } from "modules/render-engine/Foundation";
 import { VideoWidget } from "modules/render-engine/widgets/VideoWidget";
+import { TextWidget } from "modules/render-engine/widgets/TextWidget";
 
 const renderClips = (
   container: Container,
@@ -102,19 +103,19 @@ export const Monitor = ({
           .filter(
             (clip) => clip.start <= monitor.time && clip.end >= monitor.time
           )
-          .filter((clip) => clip.type === "video-clip")
           .map((clip) => {
-            if (clip.type !== "video-clip")
-              throw new Error("Invalid clip type");
-
-            return new VideoWidget(
-              clip.id,
-              clip.url,
-              [0, 0],
-              300,
-              533,
-              monitor.time
-            );
+            if (clip.type === "text-clip") {
+              return new TextWidget(clip.id, clip.text, [267, 150]);
+            } else {
+              return new VideoWidget(
+                clip.id,
+                clip.url,
+                [0, 0],
+                300,
+                533,
+                monitor.time
+              );
+            }
           });
         return nodes;
       });
