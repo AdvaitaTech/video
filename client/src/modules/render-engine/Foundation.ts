@@ -2,7 +2,7 @@ import { Container, DisplayObject } from "pixi.js";
 
 export type BuildContext = {};
 export type WidgetCreator = (context: BuildContext) => Widget[];
-class RenderCanvas {
+export class RenderCanvas {
   constructor(public container: Container) {}
 
   getContainer() {
@@ -40,6 +40,9 @@ export abstract class WidgetElement {
     this.widget = widget;
   }
 
+  activateWidget(widget: Widget) {
+    this.widget = widget;
+  }
   abstract render(canvas: RenderCanvas, context: BuildContext): void;
   abstract mount(parent: WidgetElement, context: BuildContext): void;
   abstract unmount(canvas: RenderCanvas): void;
@@ -57,7 +60,7 @@ export abstract class RenderLeaf extends RenderObject {
   abstract paintLeaf(canvas: RenderCanvas, context: BuildContext): void;
   abstract destroyLeaf(canvas: RenderCanvas): void;
 
-  protected markNeedsPaint() {
+  markNeedsPaint() {
     this.needsPaint = true;
   }
 
@@ -67,6 +70,7 @@ export abstract class RenderLeaf extends RenderObject {
     if (this.needsPaint) {
       this.paintLeaf(canvas, context);
     }
+    this.needsPaint = false;
   }
 
   destroy(canvas: RenderCanvas) {
@@ -81,24 +85,27 @@ export abstract class LeafWidget extends Widget {
   createElement(context: BuildContext): WidgetElement {
     return new LeafWidgetElement(this.key, this);
   }
-  abstract createRenderObject(context: BuildContext): RenderObject;
+  abstract createRenderObject(context: BuildContext): RenderLeaf;
   abstract updateRenderObject(
-    renderObject: RenderObject,
+    renderObject: RenderLeaf,
     context: BuildContext
   ): void;
 }
 
 export class LeafWidgetElement extends WidgetElement {
   widget: LeafWidget;
-  renderObject: RenderObject | null = null;
+  renderObject: RenderLeaf | null = null;
   constructor(key: string, widget: LeafWidget) {
     super(key, widget);
     this.widget = widget;
   }
 
   mount(parent: WidgetElement, context: BuildContext) {
-    const renderObject = this.widget.createRenderObject(context);
-    this.renderObject = renderObject;
+    if (this.renderObject) {
+      this.widget.updateRenderObject(this.renderObject, context);
+    } else {
+      this.renderObject = this.widget.createRenderObject(context);
+    }
   }
 
   render(canvas: RenderCanvas, context: BuildContext) {
@@ -178,13 +185,13 @@ class MultiChildElement extends WidgetElement {
   }
 }
 
-class RootWidget extends Widget {
-  createElement(context: BuildContext): WidgetElement {
+export class RootWidget extends Widget {
+  createElement(context: BuildContext): RootElement {
     return new RootElement(this.key, this);
   }
 }
 
-class RootElement extends WidgetElement {
+export class RootElement extends WidgetElement {
   _children: Map<string, WidgetElement> = new Map();
   canvas: RenderCanvas | null = null;
   mounted = false;
@@ -211,11 +218,14 @@ class RootElement extends WidgetElement {
     widgets.forEach((child) => {
       let nodeKey = child.key;
       allowedKeys.add(nodeKey);
+      let el: WidgetElement;
       if (this._children.has(nodeKey)) {
-        return;
+        el = this._children.get(nodeKey)!;
+        el.activateWidget(child);
+      } else {
+        el = child.createElement(context);
+        this._children.set(nodeKey, el);
       }
-      let el = child.createElement(context);
-      this._children.set(nodeKey, el);
       el.mount(this, context);
     });
     for (let [key, el] of this._children) {

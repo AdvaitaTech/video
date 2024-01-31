@@ -1,9 +1,11 @@
 import AppStore from "modules/state/AppStore";
-import { TrackClip } from "modules/state/project/ProjectTypes";
+import { TrackClip, VideoClip } from "modules/state/project/ProjectTypes";
 import { Application, Container, Graphics } from "pixi.js";
 import { RefObject, memo, useEffect } from "react";
 import { renderVideo } from "./RenderVideo";
 import { AssetManager } from "./AssetManager";
+import { RenderCanvas, RootWidget } from "modules/render-engine/Foundation";
+import { VideoWidget } from "modules/render-engine/widgets/VideoWidget";
 
 const renderClips = (
   container: Container,
@@ -77,34 +79,73 @@ export const Monitor = ({
       resizeTo: containerRef.current,
       antialias: true,
     });
+    let context = { width: 300, height: 553 };
     containerRef.current.appendChild(app.view as any);
+    let root = new RootWidget(id);
+    let rootElement = root.createElement(context);
+    let rootCanvas = new RenderCanvas(app.stage);
 
-    let { spinLoader, showLoader, hideLoader } = renderLoader(
-      app.stage,
-      300,
-      553
-    );
+    let counter = 0;
     app.ticker.add((delta) => {
-      const node = AppStore.project.getVideoEditorNode(id);
-      const monitor = AppStore.project.getMonitorState(id);
-      if (!node || !monitor) return;
-
-      let nodes = node.tracks
-        .sort((a, b) => b.index - a.index)
-        .flatMap((track) => track.clips)
-        .filter(
-          (clip) => clip.start <= monitor.time && clip.end >= monitor.time
-        );
-
-      let hasLoaded = AssetManager.haveAssetsLoaded(nodes);
-      if (!hasLoaded) {
-        showLoader();
-        spinLoader(delta);
-      } else {
-        hideLoader();
-        // renderClips(app.stage, nodes, monitor.time);
+      counter++;
+      if (counter % 5 !== 0) {
+        return;
       }
+      rootElement.renderWidgets(rootCanvas, context, (c) => {
+        const node = AppStore.project.getVideoEditorNode(id);
+        const monitor = AppStore.project.getMonitorState(id);
+        if (!node || !monitor) return [];
+
+        let nodes = node.tracks
+          .sort((a, b) => b.index - a.index)
+          .flatMap((track) => track.clips)
+          .filter(
+            (clip) => clip.start <= monitor.time && clip.end >= monitor.time
+          )
+          .filter((clip) => clip.type === "video-clip")
+          .map((clip) => {
+            if (clip.type !== "video-clip")
+              throw new Error("Invalid clip type");
+
+            return new VideoWidget(
+              clip.id,
+              clip.url,
+              [0, 0],
+              300,
+              533,
+              monitor.time
+            );
+          });
+        return nodes;
+      });
     });
+
+    // let { spinLoader, showLoader, hideLoader } = renderLoader(
+    //   app.stage,
+    //   300,
+    //   553
+    // );
+    // app.ticker.add((delta) => {
+    //   const node = AppStore.project.getVideoEditorNode(id);
+    //   const monitor = AppStore.project.getMonitorState(id);
+    //   if (!node || !monitor) return;
+    //
+    //   let nodes = node.tracks
+    //     .sort((a, b) => b.index - a.index)
+    //     .flatMap((track) => track.clips)
+    //     .filter(
+    //       (clip) => clip.start <= monitor.time && clip.end >= monitor.time
+    //     );
+    //
+    //   let hasLoaded = AssetManager.haveAssetsLoaded(nodes);
+    //   if (!hasLoaded) {
+    //     showLoader();
+    //     spinLoader(delta);
+    //   } else {
+    //     hideLoader();
+    //     // renderClips(app.stage, nodes, monitor.time);
+    //   }
+    // });
 
     return () => {
       containerRef.current?.removeChild(app.view as any);
