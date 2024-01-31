@@ -90,7 +90,7 @@ export const Monitor = ({
       counter++;
       if (counter % 5 !== 0) {
         return;
-      }
+      } else counter = 1;
       rootElement.renderWidgets(rootCanvas, context, (c) => {
         const node = AppStore.project.getVideoEditorNode(id);
         const monitor = AppStore.project.getMonitorState(id);

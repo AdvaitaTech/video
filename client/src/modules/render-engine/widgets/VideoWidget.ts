@@ -1,4 +1,10 @@
-import { Sprite, Texture, VideoResource } from "pixi.js";
+import {
+  BaseTexture,
+  MIPMAP_MODES,
+  Sprite,
+  Texture,
+  VideoResource,
+} from "pixi.js";
 import {
   BuildContext,
   LeafWidget,
@@ -48,6 +54,7 @@ export class VideoWidget extends LeafWidget {
 
 export class VideoRenderObject extends RenderLeaf {
   videoSprite: Sprite | null = null;
+  videoElement: HTMLVideoElement | null = null;
 
   constructor(
     public src: string,
@@ -61,15 +68,22 @@ export class VideoRenderObject extends RenderLeaf {
 
   paintLeaf(canvas: RenderCanvas, context: BuildContext) {
     if (!this.videoSprite) {
-      const texture = Texture.from<VideoResource>(this.src);
-      const video = texture.baseTexture.resource.source;
+      const video = document.createElement("video");
+      video.src = this.src;
+      video.removeAttribute("autoplay");
       video.autoplay = false;
-      video.loop = false;
       video.currentTime = 1;
       video.pause();
+      video.setAttribute("crossorigin", "anonymous");
+      const texture = Texture.from(video, {
+        resourceOptions: {
+          autoPlay: false,
+        },
+      });
       video.addEventListener("seeked", () => {
         texture.update();
       });
+      texture.update();
 
       // create a new Sprite using the video texture (yes it's that easy)
       this.videoSprite = new Sprite(texture);
@@ -79,10 +93,10 @@ export class VideoRenderObject extends RenderLeaf {
       this.videoSprite.height = this.height;
 
       canvas.addChild(this.videoSprite);
+      this.videoElement = video;
     } else {
-      const video = (
-        this.videoSprite.texture.baseTexture.resource as VideoResource
-      ).source;
+      const video = this.videoElement;
+      if (!video) return;
       video.currentTime = this.time;
       this.videoSprite.x = this.origin[0];
       this.videoSprite.y = this.origin[1];
